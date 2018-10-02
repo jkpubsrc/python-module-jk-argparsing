@@ -95,6 +95,7 @@ class AvailableLicenseList(object):
 		for li in AvailableLicenseList.__LICENSES:
 			if li is not None:
 				self.__licenseInfos[li.id] = li
+	#
 
 
 
@@ -103,6 +104,7 @@ class AvailableLicenseList(object):
 		ids = list(self.__licenseInfos.keys())
 		ids.sort()
 		return ids
+	#
 
 
 
@@ -116,6 +118,7 @@ class AvailableLicenseList(object):
 			return li.toString()
 		else:
 			return li.toString(**kwargs)
+	#
 
 
 
@@ -125,8 +128,11 @@ class AvailableLicenseList(object):
 		if li is None:
 			return None
 		return li
+	#
 
 
+
+#
 
 
 

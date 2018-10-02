@@ -39,6 +39,7 @@ class LicenseInfo(object):
 				versions = versions[:-1]
 			self.version = int(versions)
 		self.fullText = fullText
+	#
 
 
 
@@ -81,11 +82,11 @@ class LicenseInfo(object):
 			ret.extend(textLines)
 
 		return ret
+	#
 
 
 
-
-
+#
 
 
 

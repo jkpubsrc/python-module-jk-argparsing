@@ -4,13 +4,7 @@
 
 
 import os
-import time
-import traceback
 import sys
-import abc
-import re
-
-import sh
 
 from .ArgOption import ArgOption
 from .ParsedArgs import ParsedArgs
@@ -30,6 +24,7 @@ class ArgsParser(object):
 		def __init__(self, col1, col2):
 			self.col1 = col1
 			self.col2 = col2
+		#
 
 	#
 
@@ -41,6 +36,7 @@ class ArgsParser(object):
 			self.col1 = col1
 			self.col2 = col2
 			self.col3 = col3
+		#
 
 	#
 
@@ -50,12 +46,14 @@ class ArgsParser(object):
 
 		def __init__(self):
 			self.__rows = []
+		#
 
 		def addRow(self, col1, col2):
 			assert isinstance(col1, str)
 			assert isinstance(col2, str)
 
 			self.__rows.append(ArgsParser._TextTableRow2(col1, col2))
+		#
 
 		def print(self, leftMargin, columnMargin, maxWidth, outputBuffer):
 			assert isinstance(leftMargin, int)
@@ -88,6 +86,7 @@ class ArgsParser(object):
 
 					for j in range(1, len(col2Wrapped)):
 						outputBuffer.append(sb + col2Wrapped[j])
+		#
 
 	#
 
@@ -97,6 +96,7 @@ class ArgsParser(object):
 
 		def __init__(self):
 			self.__rows = []
+		#
 
 		def addRow(self, col1, col2, col3):
 			assert isinstance(col1, str)
@@ -104,6 +104,7 @@ class ArgsParser(object):
 			assert isinstance(col3, str)
 
 			self.__rows.append(ArgsParser._TextTableRow3(col1, col2, col3))
+		#
 
 		def print(self, leftMargin, columnMargin, maxWidth, outputBuffer):
 			assert isinstance(leftMargin, int)
@@ -143,6 +144,7 @@ class ArgsParser(object):
 
 					for j in range(1, len(col3Wrapped)):
 						outputBuffer.append(sb + col3Wrapped[j])
+		#
 
 	#
 
@@ -163,6 +165,7 @@ class ArgsParser(object):
 		self.__appName = appName
 		self.__optionDataDefaults = ArgsOptionDataDict()
 		self.__licenseTextLines = None
+	#
 
 
 
@@ -170,18 +173,21 @@ class ArgsParser(object):
 	@property
 	def optionDataDefaults(self):
 		return self.__optionDataDefaults
+	#
 
 
 
 	@property
 	def appName(self):
 		return self.__appName
+	#
 
 
 
 	@property
 	def shortAppDescription(self):
 		return self.__shortAppDescription
+	#
 
 
 
@@ -195,6 +201,7 @@ class ArgsParser(object):
 		self.__commands[o.name] = o
 
 		return o
+	#
 
 
 
@@ -217,6 +224,7 @@ class ArgsParser(object):
 			if o.shortName in self.__shortArgs:
 				raise Exception("A short argument named '-" + o.shortName + "' already exists!")
 			self.__shortArgs[o.shortName] = o
+
 		if longName != None:
 			if o.longName in self.__longArgs:
 				raise Exception("A long argument named '-" + o.longName + "' already exists!")
@@ -225,6 +233,7 @@ class ArgsParser(object):
 		self.__options.append(o)
 
 		return o
+	#
 
 
 
@@ -232,6 +241,7 @@ class ArgsParser(object):
 		for line in self.buildHelpText():
 			print(line)
 		print()
+	#
 
 
 
@@ -241,6 +251,7 @@ class ArgsParser(object):
 			return sz.columns - 1
 		except:
 			return 160
+	#
 
 
 
@@ -252,6 +263,7 @@ class ArgsParser(object):
 		self.__authors.append((name, email))
 
 		return self
+	#
 
 
 
@@ -262,6 +274,7 @@ class ArgsParser(object):
 		self.__returnCodes.append((returnCode, description))
 
 		return self
+	#
 
 
 
@@ -274,6 +287,7 @@ class ArgsParser(object):
 			raise Exception("No such license: " + licenseID)
 
 		return self
+	#
 
 
 
@@ -348,6 +362,7 @@ class ArgsParser(object):
 				ArgUtils.writePrefixedWrappingText("    ", line, windowWidth, ret)
 
 		return ret
+	#
 
 
 
@@ -392,7 +407,7 @@ class ArgsParser(object):
 					else:
 						# short option
 						for i in range(1, len(current)):
-							op = self.__eatShortOption(current[i], ret)
+							(op, argsPos) = self.__eatShortOption(current[i], args, argsPos, ret)
 							if op in optionsRequired:
 								optionsRequired.remove(op)
 							if ret.terminate:
@@ -411,6 +426,7 @@ class ArgsParser(object):
 		ret.programArgs = args[argsPos:]
 
 		return ret
+	#
 
 
 
@@ -435,9 +451,36 @@ class ArgsParser(object):
 		o._invokeOpt(optionArgs, ret)
 
 		return (o, argsPos)
+	#
 
 
 
+	def __eatShortOption(self, optionName, args, argsPos, ret):
+		assert isinstance(optionName, str)
+		assert isinstance(args, list)
+		assert isinstance(argsPos, int)
+		assert isinstance(ret, ParsedArgs)
+
+		o = self.__shortArgs.get(optionName, None)
+		if o is None:
+			raise Exception("No such option: " + optionName)
+
+		if argsPos + len(o.optionParameters) > len(args):
+			raise Exception("Option " + o.longName + " expects " + str(len(o.optionParameters)) + " arguments!")
+
+		optionArgs = []
+		for i in range(0, len(o.optionParameters)):
+			optionArgs.append(o.optionParameters[i].parse(args[argsPos + i]))
+		argsPos += len(o.optionParameters)
+
+		o._invokeOpt(optionArgs, ret)
+
+		return (o, argsPos)
+	#
+
+
+
+	"""
 	def __eatShortOption(self, optionName, ret):
 		assert isinstance(optionName, str)
 		assert isinstance(ret, ParsedArgs)
@@ -449,9 +492,12 @@ class ArgsParser(object):
 		o._invokeOpt(None, ret)
 
 		return o
+	#
+	"""
 
 
 
+#
 
 
 

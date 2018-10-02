@@ -8,23 +8,30 @@ This module provides an API for processing command line arguments. There is ``ar
 
 Information about this module can be found here:
 
-* [github.org](https://github.com/jkpubsrc/python-module-jk-argparsing)
-* [pypi.python.org](https://pypi.python.org/pypi/jk_argparsing)
+* github.org_
+* pypi.python.org_
+
+.. _github.org: https://github.com/jkpubsrc/python-module-jk-argparsing
+.. _pypi.python.org: https://pypi.python.org/pypi/jk_argparsing
 
 How to use this module
 ----------------------
 
-### Import
+Import
+~~~~~~
 
 To import this module use the following statement:
 
-```python
-import jk_argparsing
-```
+::
 
-### Example
+  import jk_argparsing
 
-TODO```
+Example
+~~~~~~~
+
+::
+
+  TODO
 
 Contact Information
 -------------------

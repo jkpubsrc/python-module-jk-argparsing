@@ -14,7 +14,8 @@ Information about this module can be found here:
 How to use this module
 ----------------------
 
-### Import
+Import
+~~~~~~
 
 To import this module use the following statement:
 
@@ -22,9 +23,10 @@ To import this module use the following statement:
 import jk_argparsing
 ```
 
-### Example
+Example
+~~~~~~~
 
-TODO```
+TODO
 
 Contact Information
 -------------------

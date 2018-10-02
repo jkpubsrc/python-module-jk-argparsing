@@ -3,15 +3,7 @@
 
 
 
-import os
-import time
-import traceback
-import sys
-import abc
-import subprocess
 from enum import Enum
-
-import sh
 
 
 
@@ -19,6 +11,7 @@ import sh
 class ArgItemBase(object):
 
 	class EnumParameterType(Enum):
+
 		String = 1
 		Int32 = 2
 
@@ -41,6 +34,7 @@ class ArgItemBase(object):
 			self.minValue = None
 			self.maxValue = None
 			self.strEnumValues = None
+		#
 
 
 
@@ -53,6 +47,7 @@ class ArgItemBase(object):
 				return self.__parseInt32(sinput)
 			else:
 				raise Exception("Implementation error!")
+		#
 
 
 
@@ -74,6 +69,7 @@ class ArgItemBase(object):
 					raise Exception("Invalid argument value specified for option: " + str(self.option))
 
 			return sinput
+		#
 
 
 
@@ -90,6 +86,7 @@ class ArgItemBase(object):
 				if n > self.maxValue:
 					raise Exception("Argument too big for option: " + str(self.option))
 			return n
+		#
 
 	#
 
@@ -98,12 +95,14 @@ class ArgItemBase(object):
 	def __init__(self):
 		self.__optionParameters = []
 		self._isShortOption = False
+	#
 
 
 
 	@property
 	def optionParameters(self):
 		return self.__optionParameters
+	#
 
 
 
@@ -126,8 +125,8 @@ class ArgItemBase(object):
 			if maxLength is not None:
 				assert isinstance(maxLength, int)
 
-		if self._isShortOption:
-			raise Exception("Short options cannot have arguments!")
+		#if self._isShortOption:
+		#	raise Exception("Short options cannot have arguments!")
 
 		p = ArgItemBase.OptionParameter(displayName, self, ArgItemBase.EnumParameterType.String)
 		p.minLength = minLength
@@ -136,6 +135,7 @@ class ArgItemBase(object):
 		self.__optionParameters.append(p)
 
 		return self
+	#
 
 
 
@@ -147,8 +147,8 @@ class ArgItemBase(object):
 		if maxValue is not None:
 			assert isinstance(maxValue, int)
 
-		if self._isShortOption:
-			raise Exception("Short options cannot have arguments!")
+		#if self._isShortOption:
+		#	raise Exception("Short options cannot have arguments!")
 
 		p = ArgItemBase.OptionParameter(displayName, self, ArgItemBase.EnumParameterType.Int32)
 		p.minValue = minValue
@@ -156,9 +156,11 @@ class ArgItemBase(object):
 		self.__optionParameters.append(p)
 
 		return self
+	#
 
 
 
+#
 
 
 
