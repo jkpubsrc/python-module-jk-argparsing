@@ -12,13 +12,13 @@ def readme():
 
 
 setup(name='jk_argparsing',
-	version='0.2017.7.22',
+	version='0.2018.12.28',
 	description='This is a logging framework',
 	author='Jürgen Knauth',
 	author_email='pubsrc@binary-overflow.de',
 	license='Apache 2.0',
 	url='https://github.com/jkpubsrc/python-module-jk-argparsing',
-	download_url='https://github.com/jkpubsrc/python-module-jk-argparsing/tarball/0.2017.7.22',
+	download_url='https://github.com/jkpubsrc/python-module-jk-argparsing/tarball/0.2018.12.28',
 	keywords=['exec', 'command'],
 	packages=['jk_argparsing'],
 	install_requires=[

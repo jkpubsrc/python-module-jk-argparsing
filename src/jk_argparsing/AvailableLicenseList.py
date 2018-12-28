@@ -12,7 +12,34 @@ class AvailableLicenseList(object):
 
 	__LICENSES = [
 		LicenseInfo(
+			bIsFreeSoftware = False,
+			bIsNamedLicense = False,
+			shortLicenseName = "Proprietary",
+			longLicenseName = None,
+			licenseCopyrightOwner = None,
+			versions = None,
+			url = None,
+			fullText = [
+				"Copyright {{$YEAR}} by {{$COPYRIGHTHOLDER}}",
+				"This software is genuine work created by {{$COPYRIGHTHOLDER}}. Distribution of source code, object code or any associated files of this work is generally prohibited.",
+				"For licensing details see EULA.txt or LICENSE.txt."
+			]),
+		LicenseInfo(
+			bIsFreeSoftware = False,
+			bIsNamedLicense = False,
+			shortLicenseName = "Scientific",
+			longLicenseName = None,
+			licenseCopyrightOwner = None,
+			versions = None,
+			url = None,
+			fullText = [
+				"Copyright {{$YEAR}} by {{$COPYRIGHTHOLDER}}",
+				"This software is genuine work created by {{$COPYRIGHTHOLDER}}. Permission is hereby granted to run, copy and archive this software (source code and object code) and associated documentation files (the \"Software\") in scientific context (and scientific context only).",
+				"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+			]),
+		LicenseInfo(
 			bIsFreeSoftware = True,
+			bIsNamedLicense = True,
 			shortLicenseName = "AGPL",
 			longLicenseName = "GNU Affero General Public License",
 			licenseCopyrightOwner = "Free Software Foundation",
@@ -20,6 +47,7 @@ class AvailableLicenseList(object):
 			url = "https://www.gnu.org/licenses/agpl-3.0.en.html"),
 		LicenseInfo(
 			bIsFreeSoftware = True,
+			bIsNamedLicense = True,
 			shortLicenseName = "GPL",
 			longLicenseName = "GNU General Public License",
 			licenseCopyrightOwner = "Free Software Foundation",
@@ -27,6 +55,7 @@ class AvailableLicenseList(object):
 			url = "https://www.gnu.org/licenses/gpl-3.0.en.html"),
 		LicenseInfo(
 			bIsFreeSoftware = True,
+			bIsNamedLicense = True,
 			shortLicenseName = "LGPL",
 			longLicenseName = "GNU Lesser General Public License",
 			licenseCopyrightOwner = "Free Software Foundation",
@@ -34,6 +63,7 @@ class AvailableLicenseList(object):
 			url = "https://www.gnu.org/licenses/lgpl-3.0.en.html"),
 		LicenseInfo(
 			bIsFreeSoftware = True,
+			bIsNamedLicense = True,
 			shortLicenseName = "Apache",
 			longLicenseName = "Apache Software License",
 			licenseCopyrightOwner = "Apache Software Foundation",
@@ -41,6 +71,7 @@ class AvailableLicenseList(object):
 			url = "https://www.apache.org/licenses/LICENSE-2.0"),
 		LicenseInfo(
 			bIsFreeSoftware = True,
+			bIsNamedLicense = True,
 			shortLicenseName = "MPL",
 			longLicenseName = "Mozilla Public License",
 			licenseCopyrightOwner = "Mozilla Foundation",
@@ -48,6 +79,7 @@ class AvailableLicenseList(object):
 			url = "https://www.apache.org/licenses/MPL-2.0"),
 		LicenseInfo(
 			bIsFreeSoftware = True,
+			bIsNamedLicense = True,
 			shortLicenseName = "MIT",
 			longLicenseName = "MIT License",
 			licenseCopyrightOwner = "Massachusetts Institute of Technology",
@@ -60,6 +92,7 @@ class AvailableLicenseList(object):
 			]),
 		LicenseInfo(
 			bIsFreeSoftware = True,
+			bIsNamedLicense = True,
 			shortLicenseName = "BSD",
 			longLicenseName = "Berkeley Software Distribution License",
 			licenseCopyrightOwner = "University of California, Berkeley",
@@ -74,6 +107,7 @@ class AvailableLicenseList(object):
 			]),
 		LicenseInfo(
 			bIsFreeSoftware = True,
+			bIsNamedLicense = True,
 			shortLicenseName = "FreeBSD",
 			longLicenseName = "FreeBSD Berkeley Software Distribution License",
 			licenseCopyrightOwner = "University of California, Berkeley",

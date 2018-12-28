@@ -101,6 +101,18 @@ class ArgOption(ArgItemBase):
 
 
 
+	def __repr__(self):
+		if self.__longName != None:
+			return "--" + self.__longName
+		if self.__shortName != None:
+			s = "--" + self.__longName
+			for op in self.__optionParameters:
+				s += " " + op.displayName
+		return "ArgOption(unknown)"
+	#
+
+
+
 	def required(self, errorMessage):
 		assert isinstance(errorMessage, str)
 
