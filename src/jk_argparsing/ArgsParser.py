@@ -497,6 +497,40 @@ class ArgsParser(object):
 
 
 
+	def createBashCompletionFileText(self):
+		allOptions = []
+		for o in self.__options:
+			if o.shortName:
+				allOptions.append("-" + o.shortName)
+			if o.longName:
+				allOptions.append("--" + o.longName)
+
+		allCommands = list(self.__commands.keys())
+
+		lines = [
+			"_" + self.__appName + "()",
+			"{",
+			"	local cur prev opts",
+			"	COMPREPLY=()",
+			"	cur=\"${COMP_WORDS[COMP_CWORD]}\"",
+			"	prev=\"${COMP_WORDS[COMP_CWORD-1]}\"",
+			"	opts=\"" + " ".join(allOptions) + "\"",
+			"	cmds=\"" + " ".join(allCommands) + "\"",
+			"",
+			"	if [[ ${cur} == -* ]] ; then",",
+			"		COMPREPLY=( $(compgen -W \"${opts}\" -- ${cur}) )",",
+			"		return 0",
+			"	else",
+			"		COMPREPLY=( $(compgen -W \"${cmds}\" -- ${cur}) )",
+			"		return 0",
+			"	fi",
+			"}",
+			"complete -F _devon devon",
+		]
+		return "\n".join(lines)
+	#
+
+
 #
 
 

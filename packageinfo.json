@@ -1,0 +1,44 @@
+{
+	"language": "python3",
+	"name": "jk_argparsing",
+	"version": "0.2019.4.10",
+	"meta": {
+		"description": "A python module for parsing of program arguments.",
+		"keywords": [
+			"program",
+			"arguments",
+			"commands",
+			"options",
+			"args"
+		],
+		"license": "Apache 2.0",
+		"development_status": "stable",
+		"authors": [
+			{
+				"name": "Jürgen Knauth",
+				"email": "pubsrc@binary-overflow.de"
+			}
+		],
+		"wiki": {
+			"documentation_page": "DevDocs:jk_argparsing",
+			"issues_page": "jk_argparsing"
+		}
+	},
+	"repository": {
+		"type": "github",
+		"user": "jkpubsrc",
+		"project": "python-module-jk-argparsing"
+	},
+	"source": {
+		"packages": [
+			"jk_argparsing"
+		],
+		"extra_data_files": [
+		]
+	},
+	"requirements": {
+		"python_packages": [
+		]
+	}
+}
+
