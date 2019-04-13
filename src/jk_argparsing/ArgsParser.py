@@ -507,7 +507,7 @@ class ArgsParser(object):
 
 		allCommands = list(self.__commands.keys())
 
-		lines = [
+		lineslines = [
 			"_" + self.__appName + "()",
 			"{",
 			"	local cur prev opts",
