@@ -84,7 +84,7 @@ class ArgItemBase(object):
 
 			if self.mustExist:
 				if not os.path.isfile(sinput):
-					raise Exception("File specified for option " + repr(self.option) + " does not exist:: " + repr(sinput))
+					raise Exception("File specified for option " + repr(str(self.option)) + " does not exist: " + repr(sinput))			# NEW FIX
 
 			return sinput
 		#
