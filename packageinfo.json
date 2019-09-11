@@ -1,7 +1,7 @@
 {
 	"language": "python3",
 	"name": "jk_argparsing",
-	"version": "0.2019.9.10",
+	"version": "0.2019.9.11",
 	"meta": {
 		"description": "A python module for parsing of program arguments.",
 		"keywords": [
@@ -24,11 +24,13 @@
 			"issues_page": "jk_argparsing"
 		}
 	},
-	"repository": {
-		"type": "github",
-		"user": "jkpubsrc",
-		"project": "python-module-jk-argparsing"
-	},
+	"repositories": [
+		{
+			"type": "github",
+			"user": "jkpubsrc",
+			"project": "python-module-jk-argparsing"
+		}
+	],
 	"source": {
 		"packages": [
 			"jk_argparsing"

@@ -5,6 +5,5 @@ from .ParsedArgs import ParsedArgs
 
 
 
-__version__ = "0.2019.9.10"
-
+__version__ = "0.2019.9.11"
 

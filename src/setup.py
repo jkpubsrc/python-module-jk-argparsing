@@ -12,7 +12,7 @@
 from setuptools import setup
 
 def readme():
-	with open("../README.md", "r", encoding="UTF-8-sig") as f:
+	with open("README.md", "r", encoding="UTF-8-sig") as f:
 		return f.read()
 
 setup(
@@ -24,7 +24,7 @@ setup(
 		"License :: OSI Approved :: Apache Software License",
 	],
 	description = "A python module for parsing of program arguments.",
-	download_url = "https://github.com/jkpubsrc/python-module-jk-argparsing/tarball/0.2019.9.10",
+	download_url = "https://github.com/jkpubsrc/python-module-jk-argparsing/tarball/0.2019.9.11",
 	include_package_data = False,
 	install_requires = [
 	],
@@ -41,7 +41,7 @@ setup(
 		"jk_argparsing",
 	],
 	url = "https://github.com/jkpubsrc/python-module-jk-argparsing",
-	version = "0.2019.9.10",
+	version = "0.2019.9.11",
 	zip_safe = False,
 	long_description = readme(),
 	long_description_content_type="text/markdown",
