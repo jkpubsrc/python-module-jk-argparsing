@@ -41,7 +41,7 @@ setup(
 		"jk_argparsing",
 	],
 	url = "https://github.com/jkpubsrc/python-module-jk-argparsing",
-	version = "0.2020.8.15.2",
+	version = "0.2020.8.15.3",
 	zip_safe = False,
 	long_description = readme(),
 	long_description_content_type="text/markdown",

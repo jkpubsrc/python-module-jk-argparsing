@@ -10,6 +10,9 @@ from .ArgsOptionDataDict import ArgsOptionDataDict
 from .ArgUtils import ArgUtils
 from .AvailableLicenseList import AvailableLicenseList
 from .ArgCommand import ArgCommand
+from ._DescrPargraph import _DescrPargraph
+from ._DescrChapter import _DescrChapter
+
 
 
 
@@ -163,6 +166,7 @@ class ArgsParser(object):
 		self.__appName = appName
 		self.__optionDataDefaults = ArgsOptionDataDict()
 		self.__licenseTextLines = None
+		self.__textChapters = []
 	#
 
 
@@ -289,11 +293,39 @@ class ArgsParser(object):
 
 
 
+	def addDescriptionChapter(self, chapterName:str, paragraphs:list):
+		if chapterName is not None:
+			assert isinstance(chapterName, str)
+
+		assert isinstance(paragraphs, (tuple, list))
+		assert len(paragraphs) > 0
+		for p in paragraphs:
+			assert isinstance(p, str)
+			assert p
+
+		self.__textChapters.append(_DescrChapter(chapterName, paragraphs))
+	#
+
+
+
 	def buildHelpText(self):
 		windowWidth = self.__windowWidth()
+		textWindowWidth = min(windowWidth, 140)
 		ret = []
 
-		ArgUtils.writePrefixedWrappingText(self.__appName + " - ", self.__shortAppDescription, windowWidth, ret)
+		ArgUtils.writePrefixedWrappingText(self.__appName + " - ", self.__shortAppDescription, textWindowWidth, ret)
+
+		if self.__textChapters:
+			ret.append("")
+			ret.append("  Description:")
+			ret.append("")
+
+			bAddEmptyLine = False
+			for chapter in self.__textChapters:
+				if bAddEmptyLine:
+					ret.append("")
+				ret.extend(chapter.toLines("    ", textWindowWidth - 4))
+				bAddEmptyLine = True
 
 		ret.append("")
 		ret.append("  Options:")
@@ -365,7 +397,7 @@ class ArgsParser(object):
 
 			for line in self.__licenseTextLines:
 				ret.append("")
-				ArgUtils.writePrefixedWrappingText("    ", line, windowWidth, ret)
+				ArgUtils.writePrefixedWrappingText("    ", line, textWindowWidth, ret)
 
 		return ret
 	#
