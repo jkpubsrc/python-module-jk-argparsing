@@ -1,6 +1,4 @@
-﻿#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
+﻿
 
 
 import os
@@ -222,12 +220,12 @@ class ArgsParser(object):
 
 		if shortName != None:
 			if o.shortName in self.__shortArgs:
-				raise Exception("A short argument named '-" + o.shortName + "' already exists!")
+				raise Exception("Duplicate short argument: '-" + o.shortName + "'")
 			self.__shortArgs[o.shortName] = o
 
 		if longName != None:
 			if o.longName in self.__longArgs:
-				raise Exception("A long argument named '-" + o.longName + "' already exists!")
+				raise Exception("Duplicate long argument: '--" + o.longName + "'")
 			self.__longArgs[o.longName] = o
 
 		self.__options.append(o)
@@ -304,13 +302,18 @@ class ArgsParser(object):
 		textTable = ArgsParser._TextTable3()
 		for o in self.__options:
 			sShortName = ("-" + o.shortName) if (o.shortName != None) else ""
+			for op in o.optionParameters:
+				sShortName += " " + op.displayName
+
 			if o.longName != None:
 				sLongName = "--" + o.longName
 				for op in o.optionParameters:
 					sLongName += " " + op.displayName
 			else:
 				sLongName = ""
+
 			textTable.addRow(sShortName, sLongName, o.description)
+
 		textTable.print(4, 2, windowWidth, ret)
 
 		if len(self.__authors) > 0:
@@ -507,7 +510,7 @@ class ArgsParser(object):
 
 		allCommands = list(self.__commands.keys())
 
-		lineslines = [
+		lines = [
 			"_" + self.__appName + "()",
 			"{",
 			"	local cur prev opts",
