@@ -204,11 +204,11 @@ class ArgsParser(object):
 
 
 	def createOption(self, shortName, longName, description):
-		if shortName != None:
+		if shortName is not None:
 			assert isinstance(shortName, str)
 			assert len(shortName) == 1
 
-		if longName != None:
+		if longName is not None:
 			assert isinstance(longName, str)
 
 		assert isinstance(description, str)
@@ -218,12 +218,12 @@ class ArgsParser(object):
 
 		o = ArgOption(shortName, longName, description)
 
-		if shortName != None:
+		if shortName is not None:
 			if o.shortName in self.__shortArgs:
 				raise Exception("Duplicate short argument: '-" + o.shortName + "'")
 			self.__shortArgs[o.shortName] = o
 
-		if longName != None:
+		if longName is not None:
 			if o.longName in self.__longArgs:
 				raise Exception("Duplicate long argument: '--" + o.longName + "'")
 			self.__longArgs[o.longName] = o
@@ -255,7 +255,7 @@ class ArgsParser(object):
 
 	def createAuthor(self, name, email = None):
 		assert isinstance(name, str)
-		if email != None:
+		if email is not None:
 			assert isinstance(email, str)
 
 		self.__authors.append((name, email))
@@ -301,11 +301,14 @@ class ArgsParser(object):
 
 		textTable = ArgsParser._TextTable3()
 		for o in self.__options:
-			sShortName = ("-" + o.shortName) if (o.shortName != None) else ""
-			for op in o.optionParameters:
-				sShortName += " " + op.displayName
+			if o.shortName is not None:
+				sShortName = "-" + o.shortName
+				for op in o.optionParameters:
+					sShortName += " " + op.displayName
+			else:
+				sShortName = ""
 
-			if o.longName != None:
+			if o.longName is not None:
 				sLongName = "--" + o.longName
 				for op in o.optionParameters:
 					sLongName += " " + op.displayName
@@ -356,7 +359,7 @@ class ArgsParser(object):
 				textTable.addRow(str(retCode), retCodeDescription)
 			textTable.print(4, 2, windowWidth, ret)
 
-		if (self.__licenseTextLines != None) and (len(self.__licenseTextLines) > 0):
+		if (self.__licenseTextLines is not None) and (len(self.__licenseTextLines) > 0):
 			ret.append("")
 			ret.append("  License:")
 
