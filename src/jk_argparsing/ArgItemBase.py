@@ -66,11 +66,11 @@ class ArgItemBase(object):
 		def __parseFile(self, sinput):
 			assert isinstance(sinput, str)
 
-			if self.minLength != None:
+			if self.minLength is not None:
 				if len(sinput) < self.minLength:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-			if self.maxLength != None:
+			if self.maxLength is not None:
 				if len(sinput) < self.maxLength:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
@@ -92,11 +92,11 @@ class ArgItemBase(object):
 		def __parseFileOrDirectory(self, sinput):
 			assert isinstance(sinput, str)
 
-			if self.minLength != None:
+			if self.minLength is not None:
 				if len(sinput) < self.minLength:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-			if self.maxLength != None:
+			if self.maxLength is not None:
 				if len(sinput) < self.maxLength:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
@@ -118,11 +118,11 @@ class ArgItemBase(object):
 		def __parseDirectory(self, sinput):
 			assert isinstance(sinput, str)
 
-			if self.minLength != None:
+			if self.minLength is not None:
 				if len(sinput) < self.minLength:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-			if self.maxLength != None:
+			if self.maxLength is not None:
 				if len(sinput) < self.maxLength:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
@@ -144,17 +144,17 @@ class ArgItemBase(object):
 		def __parseString(self, sinput):
 			assert isinstance(sinput, str)
 
-			if self.strEnumValues != None:
+			if self.strEnumValues is not None:
 				for v in self.strEnumValues:
 					if sinput == v:
 						return sinput
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-			if self.minLength != None:
+			if self.minLength is not None:
 				if len(sinput) < self.minLength:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-			if self.maxLength != None:
+			if self.maxLength is not None:
 				if len(sinput) < self.maxLength:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
@@ -169,10 +169,10 @@ class ArgItemBase(object):
 			except:
 				raise Exception("Argument is not a valid integer value at option " + repr(str(self.option)) + ": " + repr(sinput))
 
-			if self.minValue != None:
+			if self.minValue is not None:
 				if n < self.minValue:
 					raise Exception("Argument too small for option " + repr(str(self.option)) + ": " + repr(sinput))
-			if self.maxValue != None:
+			if self.maxValue is not None:
 				if n > self.maxValue:
 					raise Exception("Argument too big for option " + repr(str(self.option)) + ": " + repr(sinput))
 			return n

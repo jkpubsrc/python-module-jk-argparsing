@@ -14,10 +14,10 @@ class ArgOption(ArgItemBase):
 	def __init__(self, shortName, longName, description):
 		super().__init__()
 
-		if shortName != None:
+		if shortName is not None:
 			assert isinstance(shortName, str)
 			assert len(shortName) == 1
-		if longName != None:
+		if longName is not None:
 			assert isinstance(longName, str)
 		assert isinstance(description, str)
 
@@ -55,14 +55,14 @@ class ArgOption(ArgItemBase):
 
 	@property
 	def isRequired(self):
-		return self.__requiredErrorMessage != None
+		return self.__requiredErrorMessage is not None
 	#
 
 
 
 	@property
 	def isShortOption(self):
-		return self.__shortName != None
+		return self.__shortName is not None
 	#
 
 
@@ -82,31 +82,37 @@ class ArgOption(ArgItemBase):
 
 
 	def _invokeOpt(self, optArgs, parsedArgs):
-		if self.__onOption != None:
+		if self.__onOption is not None:
 			self.__onOption(self, optArgs, parsedArgs)
 	#
 
 
 
 	def __str__(self):
-		if self.__longName != None:
-			return "--" + self.__longName
-		if self.__shortName != None:
+		if self.__longName is not None:
 			s = "--" + self.__longName
-			for op in self.__optionParameters:
-				s += " " + op.displayName
+			#for op in self.__optionParameters:
+			#	s += " " + op.displayName
+			return s
+
+		if self.__shortName is not None:
+			s = "-" + self.__shortName
+			#for op in self.__optionParameters:
+			#	s += " " + op.displayName
+			return s
+
 		return "ArgOption(unknown)"
 	#
 
 
 
 	def __repr__(self):
-		if self.__longName != None:
+		if self.__longName is not None:
 			return "--" + self.__longName
-		if self.__shortName != None:
-			s = "--" + self.__longName
-			for op in self.__optionParameters:
-				s += " " + op.displayName
+
+		if self.__shortName is not None:
+			return "-" + self.__shortName
+
 		return "ArgOption(unknown)"
 	#
 
