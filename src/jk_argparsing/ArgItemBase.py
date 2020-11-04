@@ -75,10 +75,9 @@ class ArgItemBase(object):
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 			if self.toAbsolutePath:
-				if not os.path.isabs(sinput):
-					if self.baseDir:
-						sinput = os.path.join(self.baseDir, sinput)
-					sinput = os.path.abspath(sinput)
+				if self.baseDir:
+					sinput = os.path.join(self.baseDir, sinput)
+				sinput = os.path.abspath(sinput)
 
 			if self.mustExist:
 				if not os.path.isfile(sinput):
@@ -101,10 +100,9 @@ class ArgItemBase(object):
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 			if self.toAbsolutePath:
-				if not os.path.isabs(sinput):
-					if self.baseDir:
-						sinput = os.path.join(self.baseDir, sinput)
-					sinput = os.path.abspath(sinput)
+				if self.baseDir:
+					sinput = os.path.join(self.baseDir, sinput)
+				sinput = os.path.abspath(sinput)
 
 			if self.mustExist:
 				if not os.path.exists(sinput):
@@ -127,10 +125,9 @@ class ArgItemBase(object):
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 			if self.toAbsolutePath:
-				if not os.path.exists(sinput):
-					if self.baseDir:
-						sinput = os.path.join(self.baseDir, sinput)
-					sinput = os.path.abspath(sinput)
+				if self.baseDir:
+					sinput = os.path.join(self.baseDir, sinput)
+				sinput = os.path.abspath(sinput)
 
 			if self.mustExist:
 				if not os.path.isdir(sinput):
