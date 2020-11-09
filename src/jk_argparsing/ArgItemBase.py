@@ -2,6 +2,8 @@
 
 
 import os
+import re
+import typing
 
 from enum import Enum
 
@@ -37,6 +39,7 @@ class ArgItemBase(object):
 			self.minValue = None
 			self.maxValue = None
 			self.strEnumValues = None
+			self.strRegEx = None
 			self.mustExist = None
 			self.baseDir = None
 			self.toAbsolutePath = None
@@ -153,6 +156,12 @@ class ArgItemBase(object):
 
 			if self.maxLength is not None:
 				if len(sinput) < self.maxLength:
+					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+
+			if self.strRegEx is not None:
+				regex = re.compile(self.strRegEx)
+				m = regex.match(sinput)
+				if m is None:
 					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 			return sinput
@@ -285,17 +294,18 @@ class ArgItemBase(object):
 
 
 
-	def expectString(self, displayName:str, minLength:int = None, maxLength:int = None, enumValues = None):
+	def expectString(self, displayName:str, minLength:int = None, maxLength:int = None, enumValues:typing.Union[list,tuple] = None, regex:str = None):
 		assert isinstance(displayName, str)
 
 		if enumValues is not None:
-			assert isinstance(enumValues, list)
+			assert isinstance(enumValues, (tuple,list))
 			assert len(enumValues) > 0
 			for v in enumValues:
 				assert isinstance(v, str)
 
 			minLength = None
 			maxLength = None
+			regex = None
 		else:
 			if minLength is not None:
 				assert isinstance(minLength, int)
@@ -303,6 +313,12 @@ class ArgItemBase(object):
 				minLength = 1
 			if maxLength is not None:
 				assert isinstance(maxLength, int)
+			if regex is not None:
+				assert isinstance(regex, str)
+				if not regex.startswith("^"):
+					regex = "^" + regex
+				if not regex.endswith("$"):
+					regex = regex + "$"
 
 		#if self._isShortOption:
 		#	raise Exception("Short options cannot have arguments!")
@@ -311,6 +327,7 @@ class ArgItemBase(object):
 		p.minLength = minLength
 		p.maxLength = maxLength
 		p.strEnumValues = enumValues
+		p.strRegEx = regex
 		self.__optionParameters.append(p)
 
 		return self
