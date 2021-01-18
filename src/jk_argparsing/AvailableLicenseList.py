@@ -1,4 +1,4 @@
-﻿
+
 
 
 from .LicenseInfo import LicenseInfo

@@ -5,4 +5,4 @@ from .ParsedArgs import ParsedArgs
 
 
 
-__version__ = "0.2020.11.9.1"
+__version__ = "0.2021.1.18"

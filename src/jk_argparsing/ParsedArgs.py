@@ -1,4 +1,4 @@
-﻿
+
 
 
 from .ArgsOptionDataDict import ArgsOptionDataDict
@@ -33,15 +33,22 @@ class ParsedArgs(object):
 
 
 
-	def dump(self, prefix = None):
+	def dump(self, prefix:str = None, printFunction = None):
 		if prefix is None:
 			prefix = ""
+		else:
+			assert isinstance(prefix, str)
 
-		print(prefix + "ParsedArgs[")
-		print(prefix + "\toptionData: " + str(self.__optionData))
-		print(prefix + "\tterminate: " + str(self.terminate))
-		print(prefix + "\tprogramArgs: " + str(self.programArgs))
-		print(prefix + "]")
+		if printFunction is None:
+			printFunction = print
+		else:
+			assert callable(printFunction)
+
+		printFunction(prefix + "ParsedArgs[")
+		printFunction(prefix + "\toptionData: " + str(self.__optionData))
+		printFunction(prefix + "\tterminate: " + str(self.terminate))
+		printFunction(prefix + "\tprogramArgs: " + str(self.programArgs))
+		printFunction(prefix + "]")
 	#
 
 
