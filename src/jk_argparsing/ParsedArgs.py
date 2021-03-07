@@ -1,7 +1,12 @@
 
 
 
+import typing
+
+
+
 from .ArgsOptionDataDict import ArgsOptionDataDict
+
 
 
 
@@ -10,6 +15,10 @@ from .ArgsOptionDataDict import ArgsOptionDataDict
 # This class contains the results of command line parsing.
 #
 class ParsedArgs(object):
+
+	################################################################################################################################
+	## Constructor
+	################################################################################################################################
 
 	def __init__(self, commands):
 		self.__commands = commands
@@ -20,7 +29,9 @@ class ParsedArgs(object):
 		self.__bError = False					# NEW IMPL
 	#
 
-
+	################################################################################################################################
+	## Public Properties
+	################################################################################################################################
 
 	#
 	# This dictionary is ready to store all data parsed from processing command
@@ -31,7 +42,9 @@ class ParsedArgs(object):
 		return self.__optionData
 	#
 
-
+	################################################################################################################################
+	## Public Methods
+	################################################################################################################################
 
 	def dump(self, prefix:str = None, printFunction = None):
 		if prefix is None:
@@ -50,8 +63,6 @@ class ParsedArgs(object):
 		printFunction(prefix + "\tprogramArgs: " + str(self.programArgs))
 		printFunction(prefix + "]")
 	#
-
-
 
 	def parseNextCommand(self):
 		if self.__bError:															# NEW IMPL
@@ -79,8 +90,6 @@ class ParsedArgs(object):
 		return (cmd.name, optionArgs)
 	#
 
-
-
 	def parseCommands(self):														# NEW IMPL
 		if self.__bError:
 			raise Exception("There have been previous parsing errors!")
@@ -104,8 +113,6 @@ class ParsedArgs(object):
 
 			yield (cmd.name, optionArgs)
 	#
-
-
 
 #
 

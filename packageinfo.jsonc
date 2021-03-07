@@ -24,7 +24,7 @@
 		"license": "Apache2",
 		"name": "jk_argparsing",
 		"packageClass": "python-module",
-		"version": "0.2021.1.18"
+		"version": "0.2021.3.7"
 	},
 	"repositories": [
 		{
@@ -39,15 +39,23 @@
 		}
 	],
 	"requirements": {
-		"python_packages": [],
-		"python_packages_dev": [],
-		"system_apt_packages": []
+		"python_packages": [
+			"jk_terminal_essentials",
+		],
+		"python_packages_dev": [
+		],
+		"system_apt_packages": [
+		]
 	},
 	"source": {
-		"extra_binary_files": [],
-		"extra_data_files": [],
+		"extra_binary_files": [
+		],
+		"extra_data_files": [
+		],
 		"packages": [
-			"jk_argparsing"
+			"jk_argparsing",
+			"jk_argparsing.textmodel",
+			"jk_argparsing.textprimitives",
 		]
 	}
 }

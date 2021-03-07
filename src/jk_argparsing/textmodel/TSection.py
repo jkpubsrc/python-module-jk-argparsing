@@ -1,54 +1,75 @@
 
 
 
-from .ArgItemBase import *
+import typing
+
+from .TBlock import TBlock
 
 
 
 
-class ArgCommand(ArgItemBase):
+
+class TSection(object):
 
 	################################################################################################################################
 	## Constructor
 	################################################################################################################################
 
-	def __init__(self, name, description):
-		super().__init__()
+	#
+	# Constructor method.
+	#
+	def __init__(self, title:str, contentBlocks:typing.Sequence):
+		assert isinstance(title, str)
+		assert title
+		self.__title = title
 
-		assert isinstance(name, str)
-		assert isinstance(description, str)
-
-		self.__name = name
-		self.__description = description
+		self.__contentBlocks = []
+		if contentBlocks:
+			if isinstance(contentBlocks, str):
+				raise TypeError(str(type(contentBlocks)))
+			for content in contentBlocks:
+				self.addContentBlock(content)
 	#
 
 	################################################################################################################################
-	## Public Property
+	## Public Properties
 	################################################################################################################################
 
 	@property
-	def name(self):
-		return self.__name
+	def title(self) -> str:
+		return self.__title
 	#
 
 	@property
-	def description(self):
-		return self.__description
+	def contentBlocks(self) -> list:
+		return list(self.__contentBlocks)
 	#
 
 	################################################################################################################################
-	## Helper Method
+	## Helper Methods
 	################################################################################################################################
 
 	################################################################################################################################
-	## Public Method
+	## Public Methods
 	################################################################################################################################
 
-	def __str__(self):
-		return self.__name
+	def addContentBlock(self, content:typing.Union[str,TBlock]):
+		b = None
+		if isinstance(content, TBlock):
+			b = content
+		elif isinstance(content, TSection):
+			b = content
+		elif isinstance(content, str):
+			b = TBlock(content)
+		else:
+			raise Exception("Unknown data type used for content: " + type(content).__name__)
+		self.__contentBlocks.append(b)
 	#
 
 #
+
+
+
 
 
 

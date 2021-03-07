@@ -1,4 +1,4 @@
-
+	
 
 
 import os
@@ -12,6 +12,10 @@ from enum import Enum
 
 class ArgItemBase(object):
 
+	################################################################################################################################
+	## Nested Classes
+	################################################################################################################################
+
 	class EnumParameterType(Enum):
 
 		String = 1
@@ -22,7 +26,7 @@ class ArgItemBase(object):
 
 	#
 
-
+	################################################################################################################################
 
 	class OptionParameter(object):
 
@@ -45,8 +49,6 @@ class ArgItemBase(object):
 			self.toAbsolutePath = None
 		#
 
-
-
 		def parse(self, sinput):
 			assert isinstance(sinput, str)
 
@@ -63,8 +65,6 @@ class ArgItemBase(object):
 			else:
 				raise Exception("Implementation error!")
 		#
-
-
 
 		def __parseFile(self, sinput):
 			assert isinstance(sinput, str)
@@ -89,8 +89,6 @@ class ArgItemBase(object):
 			return sinput
 		#
 
-
-
 		def __parseFileOrDirectory(self, sinput):
 			assert isinstance(sinput, str)
 
@@ -114,8 +112,6 @@ class ArgItemBase(object):
 			return sinput
 		#
 
-
-
 		def __parseDirectory(self, sinput):
 			assert isinstance(sinput, str)
 
@@ -138,8 +134,6 @@ class ArgItemBase(object):
 
 			return sinput
 		#
-
-
 
 		def __parseString(self, sinput):
 			assert isinstance(sinput, str)
@@ -167,8 +161,6 @@ class ArgItemBase(object):
 			return sinput
 		#
 
-
-
 		def __parseInt32(self, sinput):
 			try:
 				n = int(sinput)
@@ -186,23 +178,37 @@ class ArgItemBase(object):
 
 	#
 
-
+	################################################################################################################################
+	## Constructors
+	################################################################################################################################
 
 	def __init__(self):
 		self.__optionParameters = []
 		self._isShortOption = False
 	#
 
-
+	################################################################################################################################
+	## Public Properties
+	################################################################################################################################
 
 	@property
-	def optionParameters(self):
+	def optionParameters(self) -> list:
 		return self.__optionParameters
 	#
 
+	################################################################################################################################
+	## Public Methods
+	################################################################################################################################
 
+	def expectFileOrDirectory(self,
+			displayName:str,
+			minLength:int = None,
+			maxLength:int = None,
+			mustExist:bool = False,
+			toAbsolutePath:bool = False,
+			baseDir:str = None,
+		):
 
-	def expectFileOrDirectory(self, displayName:str, minLength:int = None, maxLength:int = None, mustExist:bool = False, toAbsolutePath:bool = False, baseDir:str = None):
 		assert isinstance(displayName, str)
 
 		if minLength is not None:
@@ -232,9 +238,15 @@ class ArgItemBase(object):
 		return self
 	#
 
+	def expectFile(self,
+			displayName:str,
+			minLength:int = None,
+			maxLength:int = None,
+			mustExist:bool = False,
+			toAbsolutePath:bool = False,
+			baseDir:str = None,
+		):
 
-
-	def expectFile(self, displayName:str, minLength:int = None, maxLength:int = None, mustExist:bool = False, toAbsolutePath:bool = False, baseDir:str = None):
 		assert isinstance(displayName, str)
 
 		if minLength is not None:
@@ -262,9 +274,15 @@ class ArgItemBase(object):
 		return self
 	#
 
+	def expectDirectory(self,
+			displayName:str,
+			minLength:int = None,
+			maxLength:int = None,
+			mustExist:bool = False,
+			toAbsolutePath:bool = False,
+			baseDir:str = None,
+		):
 
-
-	def expectDirectory(self, displayName:str, minLength:int = None, maxLength:int = None, mustExist:bool = False, toAbsolutePath:bool = False, baseDir:str = None):
 		assert isinstance(displayName, str)
 
 		if minLength is not None:
@@ -292,9 +310,14 @@ class ArgItemBase(object):
 		return self
 	#
 
+	def expectString(self,
+			displayName:str,
+			minLength:int = None,
+			maxLength:int = None,
+			enumValues:typing.Union[list,tuple] = None,
+			regex:str = None,
+		):
 
-
-	def expectString(self, displayName:str, minLength:int = None, maxLength:int = None, enumValues:typing.Union[list,tuple] = None, regex:str = None):
 		assert isinstance(displayName, str)
 
 		if enumValues is not None:
@@ -333,9 +356,12 @@ class ArgItemBase(object):
 		return self
 	#
 
+	def expectInt32(self,
+			displayName,
+			minValue:int = None,
+			maxValue:int = None,
+		):
 
-
-	def expectInt32(self, displayName, minValue:int = None, maxValue:int = None):
 		assert isinstance(displayName, str)
 
 		if minValue is not None:

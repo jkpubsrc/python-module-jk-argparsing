@@ -4,14 +4,19 @@
 import os
 import sys
 
+import jk_terminal_essentials
+
 from .ArgOption import ArgOption
 from .ParsedArgs import ParsedArgs
 from .ArgsOptionDataDict import ArgsOptionDataDict
 from .ArgUtils import ArgUtils
 from .AvailableLicenseList import AvailableLicenseList
 from .ArgCommand import ArgCommand
-from ._DescrPargraph import _DescrPargraph
-from ._DescrChapter import _DescrChapter
+from .textmodel.VisSettings import VisSettings
+from .textprimitives import *
+from .textmodel import *
+
+
 
 
 
@@ -19,6 +24,10 @@ from ._DescrChapter import _DescrChapter
 
 
 class ArgsParser(object):
+
+	################################################################################################################################
+	## Nested Helper Classes
+	################################################################################################################################
 
 	class _TextTableRow2(object):
 
@@ -29,8 +38,6 @@ class ArgsParser(object):
 
 	#
 
-
-
 	class _TextTableRow3(object):
 
 		def __init__(self, col1, col2, col3):
@@ -40,8 +47,6 @@ class ArgsParser(object):
 		#
 
 	#
-
-
 
 	class _TextTable2(object):
 
@@ -90,8 +95,6 @@ class ArgsParser(object):
 		#
 
 	#
-
-
 
 	class _TextTable3(object):
 
@@ -149,9 +152,11 @@ class ArgsParser(object):
 
 	#
 
+	################################################################################################################################
+	## Constructor
+	################################################################################################################################
 
-
-	def __init__(self, appName, shortAppDescription):
+	def __init__(self, appName:str, shortAppDescription:str):
 		assert isinstance(appName, str)
 		assert isinstance(shortAppDescription, str)
 
@@ -159,41 +164,142 @@ class ArgsParser(object):
 		self.__longArgs = {}
 		self.__shortArgs = {}
 		self.__options = []
-		self.__authors = []
-		self.__returnCodes = []
+		self.__authorsList = []				# stores tuples of `(author-name, author-email)`
+		self.__synopsisList = []			# stores strings that hold the synopsis
+		self.__returnCodesList = []			# stores tuples of `(return-code, description)`
 		self.__appName = appName
 		self.__shortAppDescription = shortAppDescription
 		self.__appName = appName
 		self.__optionDataDefaults = ArgsOptionDataDict()
 		self.__licenseTextLines = None
-		self.__textChapters = []
+		self.__descriptionChapters = []		# stores TSection objects
+		self.__extraHeadChapters = []		# stores TSection objects
+		self.__extraMiddleChapters = []		# stores TSection objects
+		self.__extraEndChapters = []		# stores TSection objects
+
+		self.__visSettings = VisSettings()
 	#
 
-
-
+	################################################################################################################################
+	## Public Properties
+	################################################################################################################################
 
 	@property
-	def optionDataDefaults(self):
+	def visSettings(self) -> VisSettings:
+		return self.__visSettings
+	#
+
+	@property
+	def optionDataDefaults(self) -> ArgsOptionDataDict:
 		return self.__optionDataDefaults
 	#
 
-
-
 	@property
-	def appName(self):
+	def appName(self) -> str:
 		return self.__appName
 	#
 
-
-
 	@property
-	def shortAppDescription(self):
+	def shortAppDescription(self) -> str:
 		return self.__shortAppDescription
 	#
 
+	################################################################################################################################
+	## Helper Methods
+	################################################################################################################################
 
+	def __windowWidth(self):
+		try:
+			sz = os.get_terminal_size()
+			return min(sz.columns - 1, 140)
+		except:
+			return 160
+	#
 
-	def createCommand(self, name, description):
+	def __eatLongOption(self, optionName, args, argsPos, ret):
+		assert isinstance(optionName, str)
+		assert isinstance(args, list)
+		assert isinstance(argsPos, int)
+		assert isinstance(ret, ParsedArgs)
+
+		o = self.__longArgs.get(optionName, None)
+		if o is None:
+			raise Exception("No such option: " + optionName)
+
+		if argsPos + len(o.optionParameters) > len(args):
+			raise Exception("Option " + o.longName + " expects " + str(len(o.optionParameters)) + " arguments!")
+
+		optionArgs = []
+		for i in range(0, len(o.optionParameters)):
+			optionArgs.append(o.optionParameters[i].parse(args[argsPos + i]))
+		argsPos += len(o.optionParameters)
+
+		o._invokeOpt(optionArgs, ret)
+
+		return (o, argsPos)
+	#
+
+	def __eatShortOption(self, optionName, args, argsPos, ret):
+		assert isinstance(optionName, str)
+		assert isinstance(args, list)
+		assert isinstance(argsPos, int)
+		assert isinstance(ret, ParsedArgs)
+
+		o = self.__shortArgs.get(optionName, None)
+		if o is None:
+			raise Exception("No such option: " + optionName)
+
+		if argsPos + len(o.optionParameters) > len(args):
+			raise Exception("Option " + o.longName + " expects " + str(len(o.optionParameters)) + " arguments!")
+
+		optionArgs = []
+		for i in range(0, len(o.optionParameters)):
+			optionArgs.append(o.optionParameters[i].parse(args[argsPos + i]))
+		argsPos += len(o.optionParameters)
+
+		o._invokeOpt(optionArgs, ret)
+
+		return (o, argsPos)
+	#
+
+	"""
+	def __eatShortOption(self, optionName, ret):
+		assert isinstance(optionName, str)
+		assert isinstance(ret, ParsedArgs)
+
+		o = self.__shortArgs.get(optionName, None)
+		if o is None:
+			raise Exception("No such option: " + optionName)
+
+		o._invokeOpt(None, ret)
+
+		return o
+	#
+	"""
+
+	def __convertTSection(self, v:VisSettings, chapter:TSection) -> ITextBlock:
+		sec = TextBlockSequence(0, 0)
+
+		sec.addBlock(TextBlock(v.title2_indent, chapter.title, v.title2_fgColor))
+		sec.addBlock(TextEmpty(v.title2_paddingAfterTitle))
+
+		for block in chapter.contentBlocks:
+			sec.addBlock(TextBlock(v.section2_indent, block.text))
+			sec.addBlock(TextEmpty(v.section2_gapBetweenSections))
+
+		return sec
+	#
+
+	def __appendTitle1WithGap(self, v:VisSettings, title:str, ret:TextBlockSequence):
+		ret.addBlock(TextBlock(v.title1_indent, v.title1_preprocessor(title) if v.title1_preprocessor else title, v.title1_fgColor))
+		ret.addBlock(TextEmpty(v.title1_paddingAfterTitle))
+	#
+
+	################################################################################################################################
+	## Public Methods
+	################################################################################################################################
+
+	def createCommand(self, name, description) -> ArgCommand:
 		assert isinstance(name, str)
 		assert isinstance(description, str)
 
@@ -205,9 +311,7 @@ class ArgsParser(object):
 		return o
 	#
 
-
-
-	def createOption(self, shortName, longName, description):
+	def createOption(self, shortName, longName, description) -> ArgOption:
 		if shortName is not None:
 			assert isinstance(shortName, str)
 			assert len(shortName) == 1
@@ -237,48 +341,54 @@ class ArgsParser(object):
 		return o
 	#
 
-
-
 	def showHelp(self):
+		print()
 		for line in self.buildHelpText():
 			print(line)
 		print()
 	#
 
-
-
-	def __windowWidth(self):
-		try:
-			sz = os.get_terminal_size()
-			return sz.columns - 1
-		except:
-			return 160
 	#
-
-
-
-	def createAuthor(self, name, email = None):
+	# Add information about an author of this software.
+	#
+	def createAuthor(self, name:str, email:str = None):
 		assert isinstance(name, str)
+		assert name
 		if email is not None:
 			assert isinstance(email, str)
+			assert email
 
-		self.__authors.append((name, email))
+		self.__authorsList.append((name, email))
 
 		return self
 	#
 
+	#
+	# Create synopsis information
+	#
+	def createSynopsis(self, synopsis:str):
+		assert isinstance(synopsis, str)
+		assert synopsis
 
+		self.__synopsisList.append(synopsis)
 
-	def createReturnCode(self, returnCode, description):
+		return self
+	#
+
+	#
+	# Add a return code.
+	#
+	# @param		int returnCode		The return code (= program exit status code)
+	# @param		str description		The description for this return code
+	#
+	def createReturnCode(self, returnCode:int, description:str):
 		assert isinstance(returnCode, int)
 		assert isinstance(description, str)
 
-		self.__returnCodes.append((returnCode, description))
+		self.__returnCodesList.append((returnCode, description))
 
 		return self
 	#
-
-
 
 	def setLicense(self, licenseID, **kwargs):
 		assert isinstance(licenseID, str)
@@ -291,47 +401,65 @@ class ArgsParser(object):
 		return self
 	#
 
-
-
-	def addDescriptionChapter(self, chapterName:str, paragraphs:list):
-		if chapterName is not None:
-			assert isinstance(chapterName, str)
-
-		assert isinstance(paragraphs, (tuple, list))
-		assert len(paragraphs) > 0
-		for p in paragraphs:
-			assert isinstance(p, str)
-			assert p
-
-		self.__textChapters.append(_DescrChapter(chapterName, paragraphs))
+	def addDescriptionChapter(self, chapterName:str, paragraphs:list = None) -> TSection:
+		if isinstance(paragraphs, str):
+			sec = TSection(chapterName, [ paragraphs ])
+		else:
+			sec = TSection(chapterName, paragraphs)
+		self.__descriptionChapters.append(sec)
+		return sec
 	#
 
+	def addExtraChapterHead(self, section:TSection):
+		assert isinstance(section, TSection)
+		self.__extraHeadChapters.append(section)
+		return self
+	#
 
+	def addExtraChapterMiddle(self, section:TSection):
+		assert isinstance(section, TSection)
+		self.__extraMiddleChapters.append(section)
+		return self
+	#
 
-	def buildHelpText(self):
-		windowWidth = self.__windowWidth()
-		textWindowWidth = min(windowWidth, 140)
-		ret = []
+	def addExtraChapterEnd(self, section:TSection):
+		assert isinstance(section, TSection)
+		self.__extraEndChapters.append(section)
+		return self
+	#
 
-		ArgUtils.writePrefixedWrappingText(self.__appName + " - ", self.__shortAppDescription, textWindowWidth, ret)
+	def _txtCreateName(self, v:VisSettings) -> ITextBlock:
+		return TextBlock(0, self.__appName + " - " + self.__shortAppDescription, v.appName_fgColor)
+	#
 
-		if self.__textChapters:
-			ret.append("")
-			ret.append("  Description:")
-			ret.append("")
+	def _txtCreateSynopsis(self, v:VisSettings) -> ITextBlock:
+		if not self.__synopsisList:
+			return None
 
-			bAddEmptyLine = False
-			for chapter in self.__textChapters:
-				if bAddEmptyLine:
-					ret.append("")
-				ret.extend(chapter.toLines("    ", textWindowWidth - 4))
-				bAddEmptyLine = True
+		ret = TextBlockSequence(0, 0)
 
-		ret.append("")
-		ret.append("  Options:")
-		ret.append("")
+		# title
+		self.__appendTitle1WithGap(v, "Synopsis", ret)
 
-		textTable = ArgsParser._TextTable3()
+		# content
+		for synopsisText in self.__synopsisList:
+			ret.addBlock(TextBlock(v.section1_indent, synopsisText, None))
+
+		return ret
+	#
+
+	def _txtCreateOptions(self, v:VisSettings) -> ITextBlock:
+		if not self.__options:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, "Options", ret)
+
+		# content
+		grid = TextGridBlock(v.section1_indent, v.options_tableRowGap, v.options_tableColumnsGap, columnLayouterL2R)
+		ret.addBlock(grid)
 		for o in self.__options:
 			if o.shortName is not None:
 				sShortName = "-" + o.shortName
@@ -347,62 +475,233 @@ class ArgsParser(object):
 			else:
 				sLongName = ""
 
-			textTable.addRow(sShortName, sLongName, o.description)
-
-		textTable.print(4, 2, windowWidth, ret)
-
-		if len(self.__authors) > 0:
-			ret.append("")
-			if len(self.__authors) > 1:
-				ret.append("  Authors:")
-			else:
-				ret.append("  Author:")
-			ret.append("")
-
-			for (name, email) in self.__authors:
-				if email is None:
-					ret.append("    " + name)
-				else:
-					ret.append("    " + name + " <" + email + ">")
-
-		if len(self.__commands) > 0:
-			ret.append("")
-			ret.append("  Commands:")
-			ret.append("")
-
-			textTable = ArgsParser._TextTable2()
-			keys = list(self.__commands.keys())
-			keys.sort()
-			for key in keys:
-				cmd = self.__commands[key]
-				s = cmd.name
-				for op in cmd.optionParameters:
-					s += " " + op.displayName
-				textTable.addRow(s, cmd.description)
-			textTable.print(4, 2, windowWidth, ret)
-
-		if len(self.__returnCodes) > 0:
-			ret.append("")
-			ret.append("  Return codes:")
-			ret.append("")
-
-			textTable = ArgsParser._TextTable2()
-			for (retCode, retCodeDescription) in self.__returnCodes:
-				textTable.addRow(str(retCode), retCodeDescription)
-			textTable.print(4, 2, windowWidth, ret)
-
-		if (self.__licenseTextLines is not None) and (len(self.__licenseTextLines) > 0):
-			ret.append("")
-			ret.append("  License:")
-
-			for line in self.__licenseTextLines:
-				ret.append("")
-				ArgUtils.writePrefixedWrappingText("    ", line, textWindowWidth, ret)
+			grid.addRow([
+				TextBlock(0, sShortName, v.options_fgColor),
+				TextBlock(0, sLongName, v.options_fgColor),
+				TextBlock(0, o.description),
+			])
 
 		return ret
 	#
 
+	def _txtCreateAuthors(self, v:VisSettings) -> ITextBlock:
+		if not self.__authorsList:
+			return None
 
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, "Authors", ret)
+
+		# content
+		for (name, email) in self.__authorsList:
+			if email is None:
+				s = name
+			else:
+				s = name + " <" + email + ">"
+			ret.addBlock(TextBlock(v.section1_indent, s, None))
+
+		return ret
+	#
+
+	def _txtReturnCodes(self, v:VisSettings) -> ITextBlock:
+		if not self.__authorsList:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, "Program Exit Codes", ret)
+
+		# content
+		grid = TextGridBlock(v.section1_indent, v.exitCodes_tableRowGap, v.exitCodes_tableColumnsGap, columnLayouterL2R)
+		ret.addBlock(grid)
+		for (retCode, retCodeDescription) in self.__returnCodesList:
+			grid.addRow([
+				TextBlock(0, str(retCode), v.exitCodes_fgColor),
+				TextBlock(0, retCodeDescription),
+			])
+
+		return ret
+	#
+
+	def _txtCreateCommands(self, v:VisSettings) -> ITextBlock:
+		if not self.__commands:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, "Commands", ret)
+
+		# content
+		grid = TextGridBlock(v.section1_indent, v.commands_tableRowGap, v.commands_tableColumnsGap, columnLayouterL2R)
+		ret.addBlock(grid)
+		keys = list(self.__commands.keys())
+		keys.sort()
+		for key in keys:
+			cmd = self.__commands[key]
+			s = cmd.name
+			for op in cmd.optionParameters:
+				s += " " + op.displayName
+			grid.addRow([
+				TextBlock(0, s),
+				TextBlock(0, cmd.description),
+			])
+
+		return ret
+	#
+
+	def _txtCreateLicense(self, v:VisSettings) -> ITextBlock:
+		if not self.__licenseTextLines:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, "License", ret)
+
+		# content
+		for line in self.__licenseTextLines:
+			ret.addBlock(TextBlock(v.section1_indent, line))
+			ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
+
+		return ret
+	#
+
+	def _txtCreateDescription(self, v:VisSettings) -> ITextBlock:
+		if not self.__descriptionChapters:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, "Description", ret)
+
+		# content
+		for chapter in self.__descriptionChapters:
+			assert isinstance(chapter, TSection)
+			ret.addBlock(self.__convertTSection(v, chapter))
+
+		return ret
+	#
+
+	def _txtCreateExtraHead(self, v:VisSettings) -> ITextBlock:
+		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
+
+		if not self.__extraHeadChapters:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		for chapter in self.__extraHeadChapters:
+
+			# title
+			self.__appendTitle1WithGap(v, chapter.title, ret)
+
+			# content
+			bNeedGap = False
+			for sub in chapter.contentBlocks:
+				if bNeedGap:
+					ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
+					bNeedGap = False
+				if isinstance(sub, TSection):
+					ret.addBlock(self.__convertTSection(v, sub))
+				else:
+					ret.addBlock(TextBlock(v.section1_indent, sub.text))
+					bNeedGap = True
+
+		return ret
+	#
+
+	def _txtCreateExtraMiddle(self, v:VisSettings) -> ITextBlock:
+		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
+
+		if not self.__extraMiddleChapters:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		for chapter in self.__extraMiddleChapters:
+
+			# title
+			self.__appendTitle1WithGap(v, chapter.title, ret)
+
+			# content
+			bNeedGap = False
+			for sub in chapter.contentBlocks:
+				if bNeedGap:
+					ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
+					bNeedGap = False
+				if isinstance(sub, TSection):
+					ret.addBlock(self.__convertTSection(v, sub))
+				else:
+					ret.addBlock(TextBlock(v.section1_indent, sub.text))
+					bNeedGap = True
+
+		return ret
+	#
+
+	def _txtCreateExtraEnd(self, v:VisSettings) -> ITextBlock:
+		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
+
+		if not self.__extraEndChapters:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		for chapter in self.__extraEndChapters:
+
+			# title
+			self.__appendTitle1WithGap(v, chapter.title, ret)
+
+			# content
+			bNeedGap = False
+			for sub in chapter.contentBlocks:
+				if bNeedGap:
+					ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
+					bNeedGap = False
+				if isinstance(sub, TSection):
+					ret.addBlock(self.__convertTSection(v, sub))
+				else:
+					ret.addBlock(TextBlock(v.section1_indent, sub.text))
+					bNeedGap = True
+
+		return ret
+	#
+
+	def buildHelpText(self, bColor:bool = None) -> list:
+		if bColor is None:
+			bColor = jk_terminal_essentials.checkTerminalSupportsColors()
+
+		v = self.__visSettings
+		doc = TextBlockSequence(0, v.section1_gapBetweenSections)
+
+		# ----
+
+		for provider in [
+				self._txtCreateName,
+				self._txtCreateSynopsis,
+				self._txtCreateExtraHead,
+				self._txtCreateDescription,
+				self._txtCreateExtraMiddle,
+				self._txtCreateOptions,
+				self._txtCreateCommands,
+				self._txtReturnCodes,
+				self._txtCreateExtraEnd,
+				self._txtCreateAuthors,
+				self._txtCreateLicense,
+			]:
+
+			x = provider(v)
+			if x:
+				doc.addBlock(x)
+
+		# ----
+
+		doc.layout(self.__windowWidth())
+		return [ str(x) for x in doc.getLines(bColor) ]
+	#
 
 	def parse(self, args = None):
 		if args is None:
@@ -466,75 +765,6 @@ class ArgsParser(object):
 		return ret
 	#
 
-
-
-	def __eatLongOption(self, optionName, args, argsPos, ret):
-		assert isinstance(optionName, str)
-		assert isinstance(args, list)
-		assert isinstance(argsPos, int)
-		assert isinstance(ret, ParsedArgs)
-
-		o = self.__longArgs.get(optionName, None)
-		if o is None:
-			raise Exception("No such option: " + optionName)
-
-		if argsPos + len(o.optionParameters) > len(args):
-			raise Exception("Option " + o.longName + " expects " + str(len(o.optionParameters)) + " arguments!")
-
-		optionArgs = []
-		for i in range(0, len(o.optionParameters)):
-			optionArgs.append(o.optionParameters[i].parse(args[argsPos + i]))
-		argsPos += len(o.optionParameters)
-
-		o._invokeOpt(optionArgs, ret)
-
-		return (o, argsPos)
-	#
-
-
-
-	def __eatShortOption(self, optionName, args, argsPos, ret):
-		assert isinstance(optionName, str)
-		assert isinstance(args, list)
-		assert isinstance(argsPos, int)
-		assert isinstance(ret, ParsedArgs)
-
-		o = self.__shortArgs.get(optionName, None)
-		if o is None:
-			raise Exception("No such option: " + optionName)
-
-		if argsPos + len(o.optionParameters) > len(args):
-			raise Exception("Option " + o.longName + " expects " + str(len(o.optionParameters)) + " arguments!")
-
-		optionArgs = []
-		for i in range(0, len(o.optionParameters)):
-			optionArgs.append(o.optionParameters[i].parse(args[argsPos + i]))
-		argsPos += len(o.optionParameters)
-
-		o._invokeOpt(optionArgs, ret)
-
-		return (o, argsPos)
-	#
-
-
-
-	"""
-	def __eatShortOption(self, optionName, ret):
-		assert isinstance(optionName, str)
-		assert isinstance(ret, ParsedArgs)
-
-		o = self.__shortArgs.get(optionName, None)
-		if o is None:
-			raise Exception("No such option: " + optionName)
-
-		o._invokeOpt(None, ret)
-
-		return o
-	#
-	"""
-
-
-
 	def createBashCompletionFileText(self):
 		allOptions = []
 		for o in self.__options:
@@ -568,10 +798,7 @@ class ArgsParser(object):
 		return "\n".join(lines)
 	#
 
-
 #
-
-
 
 
 

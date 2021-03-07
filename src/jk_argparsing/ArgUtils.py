@@ -8,7 +8,7 @@ import re
 class ArgUtils(object):
 
 	@staticmethod
-	def wrapWords(text, width):
+	def wrapWords(text, width) -> list:
 		assert isinstance(text, str)
 		assert isinstance(width, int)
 
@@ -34,8 +34,6 @@ class ArgUtils(object):
 		return data
 	#
 
-
-
 	@staticmethod
 	def createEmptyString(length):
 		sb = ""
@@ -43,8 +41,6 @@ class ArgUtils(object):
 			sb += " "
 		return sb
 	#
-
-
 
 	@staticmethod
 	def writePrefixedWrappingText(firstLine, text, width, outputList):
@@ -62,8 +58,6 @@ class ArgUtils(object):
 			else:
 				outputList.append(spaces + line)
 	#
-
-
 
 #
 

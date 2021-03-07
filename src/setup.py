@@ -26,6 +26,7 @@ setup(
 	description = "A python module for parsing of program arguments.",
 	include_package_data = False,
 	install_requires = [
+		"jk_terminal_essentials",
 	],
 	keywords = [
 		"program",
@@ -38,8 +39,10 @@ setup(
 	name = "jk_argparsing",
 	packages = [
 		"jk_argparsing",
+		"jk_argparsing.textmodel",
+		"jk_argparsing.textprimitives",
 	],
-	version = "0.2021.1.18",
+	version = "0.2021.3.7",
 	zip_safe = False,
 	long_description = readme(),
 	long_description_content_type="text/markdown",
