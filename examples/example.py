@@ -68,6 +68,9 @@ ap.addExtraChapterEnd(TSection("Foo Bar End", [
 	TSection("Bar End", [ LOREM_IPSUM ]),
 ]))
 
+ap.createCommand("foo", "Lorem ipsum dolor sid amet.")
+ap.createCommand("bar", "The quick brown fox jumps over the lazy dog.")
+
 parsedArgs = ap.parse()
 #parsedArgs.dump()
 

@@ -3,7 +3,9 @@
 
 import os
 import sys
+import pwd
 
+import jk_utils
 import jk_terminal_essentials
 
 from .ArgOption import ArgOption
@@ -19,6 +21,10 @@ from .textmodel import *
 
 
 
+BASH_COMPLETION_DIR_CANDIDATES = [
+	"~/.config/bash_completion.d/",
+	"~/.bash_completion.d/",
+]
 
 
 
@@ -29,6 +35,7 @@ class ArgsParser(object):
 	## Nested Helper Classes
 	################################################################################################################################
 
+	"""
 	class _TextTableRow2(object):
 
 		def __init__(self, col1, col2):
@@ -37,7 +44,9 @@ class ArgsParser(object):
 		#
 
 	#
+	"""
 
+	"""
 	class _TextTableRow3(object):
 
 		def __init__(self, col1, col2, col3):
@@ -47,7 +56,9 @@ class ArgsParser(object):
 		#
 
 	#
+	"""
 
+	"""
 	class _TextTable2(object):
 
 		def __init__(self):
@@ -95,7 +106,9 @@ class ArgsParser(object):
 		#
 
 	#
+	"""
 
+	"""
 	class _TextTable3(object):
 
 		def __init__(self):
@@ -151,20 +164,35 @@ class ArgsParser(object):
 		#
 
 	#
+	"""
 
 	################################################################################################################################
 	## Constructor
 	################################################################################################################################
 
+	#
+	# Constructor.
+	#
+	# @param		str appName						This is the command the application can be executed with. This typically is the file name.
+	# @param		str shortAppDescription			A short textual description what this application does.
+	#
 	def __init__(self, appName:str, shortAppDescription:str):
 		assert isinstance(appName, str)
 		assert isinstance(shortAppDescription, str)
 
+		# defaults
+
+		self.titleCommandsStd = "Commands"
+		self.titleCommandsExtra = "Extra Commands"
+
+		# variables
+
 		self.__commands = {}
+		self.__commandsExtra = {}
 		self.__longArgs = {}
 		self.__shortArgs = {}
 		self.__options = []
-		self.__authorsList = []				# stores tuples of `(author-name, author-email)`
+		self.__authorsList = []				# stores tuples of `(author-name, author-email, author-description)`
 		self.__synopsisList = []			# stores strings that hold the synopsis
 		self.__returnCodesList = []			# stores tuples of `(return-code, description)`
 		self.__appName = appName
@@ -295,139 +323,6 @@ class ArgsParser(object):
 		ret.addBlock(TextEmpty(v.title1_paddingAfterTitle))
 	#
 
-	################################################################################################################################
-	## Public Methods
-	################################################################################################################################
-
-	def createCommand(self, name, description) -> ArgCommand:
-		assert isinstance(name, str)
-		assert isinstance(description, str)
-
-		o = ArgCommand(name, description)
-		if o.name in self.__commands:
-			raise Exception("A command named '-" + o.name + "' already exists!")
-		self.__commands[o.name] = o
-
-		return o
-	#
-
-	def createOption(self, shortName, longName, description) -> ArgOption:
-		if shortName is not None:
-			assert isinstance(shortName, str)
-			assert len(shortName) == 1
-
-		if longName is not None:
-			assert isinstance(longName, str)
-
-		assert isinstance(description, str)
-
-		if (shortName is None) and (longName is None):
-			raise Exception("Arguments need at least a long or a short name!")
-
-		o = ArgOption(shortName, longName, description)
-
-		if shortName is not None:
-			if o.shortName in self.__shortArgs:
-				raise Exception("Duplicate short argument: '-" + o.shortName + "'")
-			self.__shortArgs[o.shortName] = o
-
-		if longName is not None:
-			if o.longName in self.__longArgs:
-				raise Exception("Duplicate long argument: '--" + o.longName + "'")
-			self.__longArgs[o.longName] = o
-
-		self.__options.append(o)
-
-		return o
-	#
-
-	def showHelp(self):
-		print()
-		for line in self.buildHelpText():
-			print(line)
-		print()
-	#
-
-	#
-	# Add information about an author of this software.
-	#
-	def createAuthor(self, name:str, email:str = None):
-		assert isinstance(name, str)
-		assert name
-		if email is not None:
-			assert isinstance(email, str)
-			assert email
-
-		self.__authorsList.append((name, email))
-
-		return self
-	#
-
-	#
-	# Create synopsis information
-	#
-	def createSynopsis(self, synopsis:str):
-		assert isinstance(synopsis, str)
-		assert synopsis
-
-		self.__synopsisList.append(synopsis)
-
-		return self
-	#
-
-	#
-	# Add a return code.
-	#
-	# @param		int returnCode		The return code (= program exit status code)
-	# @param		str description		The description for this return code
-	#
-	def createReturnCode(self, returnCode:int, description:str):
-		assert isinstance(returnCode, int)
-		assert isinstance(description, str)
-
-		self.__returnCodesList.append((returnCode, description))
-
-		return self
-	#
-
-	def setLicense(self, licenseID, **kwargs):
-		assert isinstance(licenseID, str)
-
-		availableLicenseList = AvailableLicenseList()
-		self.__licenseTextLines = availableLicenseList.getText(licenseID, **kwargs)
-		if self.__licenseTextLines is None:
-			raise Exception("No such license: " + licenseID)
-
-		return self
-	#
-
-	def addDescriptionChapter(self, chapterName:str, paragraphs:list = None) -> TSection:
-		if isinstance(paragraphs, str):
-			sec = TSection(chapterName, [ paragraphs ])
-		else:
-			sec = TSection(chapterName, paragraphs)
-		self.__descriptionChapters.append(sec)
-		return sec
-	#
-
-	def addExtraChapterHead(self, section:TSection):
-		assert isinstance(section, TSection)
-		self.__extraHeadChapters.append(section)
-		return self
-	#
-
-	def addExtraChapterMiddle(self, section:TSection):
-		assert isinstance(section, TSection)
-		self.__extraMiddleChapters.append(section)
-		return self
-	#
-
-	def addExtraChapterEnd(self, section:TSection):
-		assert isinstance(section, TSection)
-		self.__extraEndChapters.append(section)
-		return self
-	#
-
 	def _txtCreateName(self, v:VisSettings) -> ITextBlock:
 		return TextBlock(0, self.__appName + " - " + self.__shortAppDescription, v.appName_fgColor)
 	#
@@ -494,18 +389,19 @@ class ArgsParser(object):
 		self.__appendTitle1WithGap(v, "Authors", ret)
 
 		# content
-		for (name, email) in self.__authorsList:
-			if email is None:
-				s = name
-			else:
-				s = name + " <" + email + ">"
-			ret.addBlock(TextBlock(v.section1_indent, s, None))
+		for (name, email, description) in self.__authorsList:
+			s = name
+			if email:
+				s += " <" + email + ">"
+			if description:
+				s += " - " + description
+			ret.addBlock(TextBlock(v.section1_indent, s))
 
 		return ret
 	#
 
 	def _txtReturnCodes(self, v:VisSettings) -> ITextBlock:
-		if not self.__authorsList:
+		if not self.__returnCodesList:
 			return None
 
 		ret = TextBlockSequence(0, 0)
@@ -532,7 +428,7 @@ class ArgsParser(object):
 		ret = TextBlockSequence(0, 0)
 
 		# title
-		self.__appendTitle1WithGap(v, "Commands", ret)
+		self.__appendTitle1WithGap(v, self.titleCommandsStd, ret)
 
 		# content
 		grid = TextGridBlock(v.section1_indent, v.commands_tableRowGap, v.commands_tableColumnsGap, columnLayouterL2R)
@@ -545,7 +441,34 @@ class ArgsParser(object):
 			for op in cmd.optionParameters:
 				s += " " + op.displayName
 			grid.addRow([
-				TextBlock(0, s),
+				TextBlock(0, s, v.commands_fgColor),
+				TextBlock(0, cmd.description),
+			])
+
+		return ret
+	#
+
+	def _txtCreateExtraCommands(self, v:VisSettings) -> ITextBlock:
+		if not self.__commandsExtra:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, self.titleCommandsExtra, ret)
+
+		# content
+		grid = TextGridBlock(v.section1_indent, v.commands_tableRowGap, v.commands_tableColumnsGap, columnLayouterL2R)
+		ret.addBlock(grid)
+		keys = list(self.__commandsExtra.keys())
+		keys.sort()
+		for key in keys:
+			cmd = self.__commandsExtra[key]
+			s = cmd.name
+			for op in cmd.optionParameters:
+				s += " " + op.displayName
+			grid.addRow([
+				TextBlock(0, s, v.commands_fgColor),
 				TextBlock(0, cmd.description),
 			])
 
@@ -670,6 +593,159 @@ class ArgsParser(object):
 		return ret
 	#
 
+	################################################################################################################################
+	## Public Methods
+	################################################################################################################################
+
+	def hasCommand(self, name:str) -> bool:
+		return (name in self.__commands) or (name in self.__commandsExtra)
+	#
+
+	def createCommand(self, name:str, description:str) -> ArgCommand:
+		assert isinstance(name, str)
+		assert name
+		assert isinstance(description, str)
+		assert description
+
+		o = ArgCommand(name, description)
+		if (o.name in self.__commands) or o.name in self.__commandsExtra:
+			raise Exception("A command named '-" + o.name + "' already exists!")
+		self.__commands[o.name] = o
+
+		return o
+	#
+
+	def createExtraCommand(self, name:str, description:str) -> ArgCommand:
+		assert isinstance(name, str)
+		assert name
+		assert isinstance(description, str)
+		assert description
+
+		o = ArgCommand(name, description)
+		if (o.name in self.__commands) or o.name in self.__commandsExtra:
+			raise Exception("A command named '-" + o.name + "' already exists!")
+		self.__commandsExtra[o.name] = o
+
+		return o
+	#
+
+	def createOption(self, shortName, longName, description) -> ArgOption:
+		if shortName is not None:
+			assert isinstance(shortName, str)
+			assert len(shortName) == 1
+
+		if longName is not None:
+			assert isinstance(longName, str)
+
+		assert isinstance(description, str)
+
+		if (shortName is None) and (longName is None):
+			raise Exception("Arguments need at least a long or a short name!")
+
+		o = ArgOption(shortName, longName, description)
+
+		if shortName is not None:
+			if o.shortName in self.__shortArgs:
+				raise Exception("Duplicate short argument: '-" + o.shortName + "'")
+			self.__shortArgs[o.shortName] = o
+
+		if longName is not None:
+			if o.longName in self.__longArgs:
+				raise Exception("Duplicate long argument: '--" + o.longName + "'")
+			self.__longArgs[o.longName] = o
+
+		self.__options.append(o)
+
+		return o
+	#
+
+	def showHelp(self):
+		print()
+		for line in self.buildHelpText():
+			print(line)
+		print()
+	#
+
+	#
+	# Add information about an author of this software.
+	#
+	def createAuthor(self, name:str, email:str = None, description:str = None):
+		assert isinstance(name, str)
+		assert name
+		if email is not None:
+			assert isinstance(email, str)
+			assert email
+
+		self.__authorsList.append((name, email, description))
+
+		return self
+	#
+
+	#
+	# Create synopsis information
+	#
+	def createSynopsis(self, synopsis:str):
+		assert isinstance(synopsis, str)
+		assert synopsis
+
+		self.__synopsisList.append(synopsis)
+
+		return self
+	#
+
+	#
+	# Add a return code.
+	#
+	# @param		int returnCode		The return code (= program exit status code)
+	# @param		str description		The description for this return code
+	#
+	def createReturnCode(self, returnCode:int, description:str):
+		assert isinstance(returnCode, int)
+		assert isinstance(description, str)
+
+		self.__returnCodesList.append((returnCode, description))
+
+		return self
+	#
+
+	def setLicense(self, licenseID, **kwargs):
+		assert isinstance(licenseID, str)
+
+		availableLicenseList = AvailableLicenseList()
+		self.__licenseTextLines = availableLicenseList.getText(licenseID, **kwargs)
+		if self.__licenseTextLines is None:
+			raise Exception("No such license: " + licenseID)
+
+		return self
+	#
+
+	def addDescriptionChapter(self, chapterName:str, paragraphs:list = None) -> TSection:
+		if isinstance(paragraphs, str):
+			sec = TSection(chapterName, [ paragraphs ])
+		else:
+			sec = TSection(chapterName, paragraphs)
+		self.__descriptionChapters.append(sec)
+		return sec
+	#
+
+	def addExtraChapterHead(self, section:TSection):
+		assert isinstance(section, TSection)
+		self.__extraHeadChapters.append(section)
+		return self
+	#
+
+	def addExtraChapterMiddle(self, section:TSection):
+		assert isinstance(section, TSection)
+		self.__extraMiddleChapters.append(section)
+		return self
+	#
+
+	def addExtraChapterEnd(self, section:TSection):
+		assert isinstance(section, TSection)
+		self.__extraEndChapters.append(section)
+		return self
+	#
+
 	def buildHelpText(self, bColor:bool = None) -> list:
 		if bColor is None:
 			bColor = jk_terminal_essentials.checkTerminalSupportsColors()
@@ -687,6 +763,7 @@ class ArgsParser(object):
 				self._txtCreateExtraMiddle,
 				self._txtCreateOptions,
 				self._txtCreateCommands,
+				self._txtCreateExtraCommands,
 				self._txtReturnCodes,
 				self._txtCreateExtraEnd,
 				self._txtCreateAuthors,
@@ -765,7 +842,11 @@ class ArgsParser(object):
 		return ret
 	#
 
-	def createBashCompletionFileText(self):
+	#
+	# @param	bool bWithLocal		If <c>True</c> a complete command is added for running the current script from "./" as well.
+	#								This is not needed for system wide installations.
+	#
+	def createBashCompletionFileText(self, bWithLocal:bool = False):
 		allOptions = []
 		for o in self.__options:
 			if o.shortName:
@@ -773,10 +854,10 @@ class ArgsParser(object):
 			if o.longName:
 				allOptions.append("--" + o.longName)
 
-		allCommands = list(self.__commands.keys())
+		allCommands = list(self.__commands.keys()) + list(self.__commandsExtra.keys())
 
 		lines = [
-			"_" + self.__appName + "()",
+			"_" + self.__appName + "_()",
 			"{",
 			"	local cur prev opts",
 			"	COMPREPLY=()",
@@ -793,9 +874,90 @@ class ArgsParser(object):
 			"		return 0",
 			"	fi",
 			"}",
-			"complete -F _devon devon",
+			"complete -F _" + self.__appName + "_ " + self.__appName,
 		]
+		if bWithLocal:
+			lines.append("complete -F _" + self.__appName + "_ ./" + self.__appName)
+		lines.append("")
+
 		return "\n".join(lines)
+	#
+
+	#
+	# This method generates the local bash completion file path. Or throws an exception if this feature is not configured or not supported.
+	#
+	def generateLocalBashCompletionFilePath(self, dirCandidates:list=None) -> str:
+		if os.name == 'nt':
+			raise Exception("Sorry, the bash completion feature is only supported for non-Windows operating systems.")
+
+		# ----
+
+		if dirCandidates is None:
+			dirCandidates = BASH_COMPLETION_DIR_CANDIDATES
+		else:
+			for dc in dirCandidates:
+				assert isinstance(dc, str)
+
+		# ----
+
+		homeDir = pwd.getpwuid(os.getuid()).pw_dir
+		assert isinstance(homeDir, str)
+		assert os.path.isdir(homeDir)
+
+		installDirPath = None
+		for dc in dirCandidates:
+			if dc.startswith("~/"):
+				p = os.path.join(homeDir, dc[2:])
+				if os.path.isdir(p):
+					installDirPath = p
+					break
+
+		if not installDirPath:
+			raise Exception("No installation path exists! (You might want to create: '{}')".format(BASH_COMPLETION_DIR_CANDIDATES[0]))
+
+		# ----
+
+		return os.path.join(installDirPath, self.__appName.replace(".", "_"))
+	#
+
+	def installLocalBashCompletionFile(self, dirCandidates:list=None, printFunc=None, bQuiet:bool = True, bRaiseExceptionIfNoCompletionDirExists:bool = False) -> bool:
+		if printFunc is not None:
+			assert callable(printFunc)
+		else:
+			printFunc = print
+
+		# ----
+
+		if bRaiseExceptionIfNoCompletionDirExists:
+			# allow raising exceptions
+			installFilePath = generateLocalBashCompletionFilePath(dirCandidates)
+		else:
+			# no exceptions allowed
+			try:
+				installFilePath = generateLocalBashCompletionFilePath(dirCandidates)
+			except Exception as ee:
+				if not bQuiet:
+					printFunc(str(ee))
+				return False
+
+		# ----
+
+		existingCompletionFileText = None
+		if os.path.isfile(installFilePath):
+			with open(installFilePath, "r") as f:
+				existingCompletionFileText = f.read()
+
+		newCompletionFileText = self.createBashCompletionFileText(bWithLocal=True)
+		if existingCompletionFileText != newCompletionFileText:
+			if not bQuiet:
+				printFunc("Now installing bash completion file: {}".format(installFilePath))
+
+			with open(installFilePath, "w") as f:
+				f.write(newCompletionFileText)
+
+		# ----
+
+		return True
 	#
 
 #

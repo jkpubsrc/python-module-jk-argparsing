@@ -4,3 +4,6 @@
 	* Major Refactoring
 	* Complete Reimplementation of text generation
 
+* 2021-03-11
+	* Added much better support for bash completion
+	* Added documentation for bash completion
