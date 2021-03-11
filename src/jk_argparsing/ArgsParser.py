@@ -17,15 +17,18 @@ from .ArgCommand import ArgCommand
 from .textmodel.VisSettings import VisSettings
 from .textprimitives import *
 from .textmodel import *
+from .BashCompletionLocal import BashCompletionLocal
 
 
 
 
+"""
 BASH_COMPLETION_DIR_CANDIDATES = [
 	"~/.config/bash_completion.d/",
 	"~/.bash_completion.d/",
+	"~/.local/share/bash-completion/",		# compare: https://github.com/scop/bash-completion, "Q. Where should I install my own local completions?"
 ]
-
+"""
 
 
 
@@ -230,6 +233,22 @@ class ArgsParser(object):
 	@property
 	def shortAppDescription(self) -> str:
 		return self.__shortAppDescription
+	#
+
+	@property
+	def allOptionNames(self) -> list:
+		allOptions = []
+		for o in self.__options:
+			if o.shortName:
+				allOptions.append("-" + o.shortName)
+			if o.longName:
+				allOptions.append("--" + o.longName)
+		return allOptions
+	#
+
+	@property
+	def allCommandNames(self) -> list:
+		return list(self.__commands.keys()) + list(self.__commandsExtra.keys())
 	#
 
 	################################################################################################################################
@@ -842,6 +861,7 @@ class ArgsParser(object):
 		return ret
 	#
 
+	"""
 	#
 	# @param	bool bWithLocal		If <c>True</c> a complete command is added for running the current script from "./" as well.
 	#								This is not needed for system wide installations.
@@ -958,6 +978,12 @@ class ArgsParser(object):
 		# ----
 
 		return True
+	#
+	"""
+
+	def installLocalBashCompletion(self, absAppFilePath:str):
+		bc = BashCompletionLocal()
+		bc.install(absAppFilePath, self.allOptionNames, self.allCommandNames, bQuiet=False)
 	#
 
 #

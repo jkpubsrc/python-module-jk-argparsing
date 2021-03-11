@@ -7,3 +7,5 @@
 * 2021-03-11
 	* Added much better support for bash completion
 	* Added documentation for bash completion
+	* Greatly improved bash completion
+
