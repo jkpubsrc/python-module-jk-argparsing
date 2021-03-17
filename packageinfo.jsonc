@@ -24,7 +24,7 @@
 		"license": "Apache2",
 		"name": "jk_argparsing",
 		"packageClass": "python-module",
-		"version": "0.2021.3.11.1"
+		"version": "0.2021.3.17"
 	},
 	"repositories": [
 		{

@@ -17,6 +17,59 @@ BASH_COMPLETION_DIR_CANDIDATES = [
 
 
 
+_MAIN_SCRIPT_PART = """_jk_argsparsing_completion_()
+{
+	local cur prev opts
+	COMPREPLY=()
+
+	SEARCHCMD=${COMP_WORDS[0]}
+	#echo $SEARCHCMD > foo0.txt
+
+	absLocalDirCandidate="$(realpath $(pwd)/$SEARCHCMD)"
+	#echo "${absLocalDirCandidate}" > foo1.txt
+
+	absCallerPath=""
+	if [ -f "${absLocalDirCandidate}" ]; then
+		absCallerPath="${absLocalDirCandidate}"
+	else
+		absInstalledCandidate=$(whereis "${SEARCHCMD}" | sed -nE 's/^.*:\s(\S+).*$/\\1/p')
+		#echo "${absInstalledCandidate}" > foo2.txt
+
+		if [ -f "${absInstalledCandidate}" ]; then
+			absCallerPath="${absInstalledCandidate}"
+		fi
+	fi
+	echo "${absCallerPath}" > foo3.txt
+
+	if [ -z "${absCallerPath}" ]; then
+		COMPREPLY=""
+		return 0
+	fi
+
+	slash="/"
+	temp1=${absCallerPath//$slash/_}
+	dot="."
+	temp1=${temp1//$dot/_}
+	callerID=${temp1}.bash-completion
+	callerCompletionDataFile="$(realpath ~/.config/jk_argparsing/bash_completion.d/$callerID)"
+	#echo "$callerCompletionDataFile" > foo.comp.txt
+
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+	. "$callerCompletionDataFile"
+
+	if [[ ${cur} == -* ]] ; then
+		COMPREPLY=( $(compgen -W "${jk_argsparsing_opts}" -- ${cur}) )
+		return 0
+	else
+		COMPREPLY=( $(compgen -W "${jk_argsparsing_cmds}" -- ${cur}) )
+		return 0
+	fi
+}
+"""
+
+
+
 
 class BashCompletionLocal(object):
 
@@ -27,9 +80,13 @@ class BashCompletionLocal(object):
 	#
 	# Constructor method.
 	#
-	def __init__(self, dirCandidates:str = None):
+	def __init__(self, dirCandidates:str = None, bDebug:bool = False):
 		if os.name == 'nt':
 			raise Exception("Sorry, the bash completion feature is only supported for non-Windows operating systems.")
+
+		# ----
+
+		self.__bDebug = bDebug
 
 		# ----
 
@@ -48,6 +105,10 @@ class BashCompletionLocal(object):
 			if dc.startswith("~/"):
 				p = os.path.join(self.__homeDir, dc[2:])
 				self.__dirCandidates.append(p)
+
+		# ---
+
+		self._writeDebugData("dirCandidates:", self.__dirCandidates)
 	#
 
 	################################################################################################################################
@@ -57,6 +118,12 @@ class BashCompletionLocal(object):
 	################################################################################################################################
 	## Helper Methods
 	################################################################################################################################
+
+	def _writeDebugData(self, *args):
+		if self.__bDebug:
+			if args:
+				print("DEBUG:", *args)
+	#
 
 	#
 	# This method generates the local bash completion file path. Or throws an exception if this feature is not configured or not supported.
@@ -76,38 +143,10 @@ class BashCompletionLocal(object):
 	def _createBCScriptFileText(self, absScriptFilePath:str):
 		appName = os.path.basename(absScriptFilePath)
 
-		lines = [
-			"_jk_argsparsing_completion_()",
-			"{",
-			"	local cur prev opts",
-			"	COMPREPLY=()",
-			"	absCallerPath=\"$(realpath $(pwd)/${COMP_WORDS[0]})\"",
-			"	slash=\"/\"",
-			"	temp1=${absCallerPath//$slash/_}",
-			"	dot=\".\"",
-			"	temp1=${temp1//$dot/_}",
-			"	callerID=${temp1}.bash-completion",
-			"	callerCompletionDataFile=\"$(realpath ~/.config/jk_argparsing/bash_completion.d/$callerID)\"",
-			"	#echo \"$callerCompletionDataFile\" > foo.comp.txt",
-			"",
-			"	cur=\"${COMP_WORDS[COMP_CWORD]}\"",
-			"	prev=\"${COMP_WORDS[COMP_CWORD-1]}\"",
-			"	. \"$callerCompletionDataFile\"",
-			"",
-			"	if [[ ${cur} == -* ]] ; then",
-			"		COMPREPLY=( $(compgen -W \"${jk_argsparsing_opts}\" -- ${cur}) )",
-			"		return 0",
-			"	else",
-			"		COMPREPLY=( $(compgen -W \"${jk_argsparsing_cmds}\" -- ${cur}) )",
-			"		return 0",
-			"	fi",
-			"}",
-			"complete -F _jk_argsparsing_completion_ " + appName,
-			"complete -F _jk_argsparsing_completion_ ./" + appName,
-			"",
-		]
-
-		return "\n".join(lines)
+		return _MAIN_SCRIPT_PART + "\n" \
+			+ "complete -F _jk_argsparsing_completion_ " + appName + "\n" \
+			+ "complete -F _jk_argsparsing_completion_ ./" + appName + "\n" \
+			+ "\n"
 	#
 
 	def _createBCDataFileText(self, absScriptFilePath:str, allOptions:list, allCommands:list):
@@ -140,6 +179,8 @@ class BashCompletionLocal(object):
 		installScriptDirPath = os.path.dirname(installScriptFilePath)
 		if not os.path.isdir(installScriptDirPath):
 			os.makedirs(installScriptDirPath, exist_ok=True)
+		self._writeDebugData("installScriptDirPath:", installScriptDirPath)
+		self._writeDebugData("installScriptFilePath:", installScriptFilePath)
 
 		existingCompletionScriptFileText = None
 		if os.path.isfile(installScriptFilePath):
@@ -148,11 +189,15 @@ class BashCompletionLocal(object):
 
 		newCompletionScriptFileText = self._createBCScriptFileText(absScriptFilePath)
 		if existingCompletionScriptFileText != newCompletionScriptFileText:
+			self._writeDebugData("Completion script file differs from expected.")
 			if not bQuiet:
 				printFunc("Now installing bash completion script file: {}".format(installScriptFilePath))
+			self._writeDebugData("Now installing bash completion script file: {}".format(installScriptFilePath))
 
 			with open(installScriptFilePath, "w") as f:
 				f.write(newCompletionScriptFileText)
+		else:
+			self._writeDebugData("Completion script file exists with expected content.")
 
 		# ----
 
@@ -160,6 +205,8 @@ class BashCompletionLocal(object):
 		installDataDirPath = os.path.dirname(installDataFilePath)
 		if not os.path.isdir(installDataDirPath):
 			os.makedirs(installDataDirPath, exist_ok=True)
+		self._writeDebugData("installDataDirPath:", installDataDirPath)
+		self._writeDebugData("installDataFilePath:", installDataFilePath)
 
 		existingCompletionDataFileText = None
 		if os.path.isfile(installDataFilePath):
@@ -168,11 +215,15 @@ class BashCompletionLocal(object):
 
 		newCompletionDataFileText = self._createBCDataFileText(absScriptFilePath, options, allCommands)
 		if existingCompletionDataFileText != newCompletionDataFileText:
+			self._writeDebugData("Completion data file differs from expected.")
 			if not bQuiet:
 				printFunc("Now installing bash completion data file: {}".format(installDataFilePath))
+			self._writeDebugData("Now installing bash completion data file: {}".format(installDataFilePath))
 
 			with open(installDataFilePath, "w") as f:
 				f.write(newCompletionDataFileText)
+		else:
+			self._writeDebugData("Completion data file exists with expected content.")
 
 		# ----
 

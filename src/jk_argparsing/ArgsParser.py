@@ -981,9 +981,10 @@ class ArgsParser(object):
 	#
 	"""
 
-	def installLocalBashCompletion(self, absAppFilePath:str):
-		bc = BashCompletionLocal()
-		bc.install(absAppFilePath, self.allOptionNames, self.allCommandNames, bQuiet=False)
+	def installLocalBashCompletion(self, absAppFilePath:str, bDebug:bool = False):
+		bc = BashCompletionLocal(bDebug=bDebug)
+		bc._writeDebugData("absAppFilePath =", absAppFilePath)
+		bc.install(absAppFilePath, self.allOptionNames, self.allCommandNames, bQuiet=True)
 	#
 
 #

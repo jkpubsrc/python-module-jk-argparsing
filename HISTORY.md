@@ -9,3 +9,6 @@
 	* Added documentation for bash completion
 	* Greatly improved bash completion
 
+* 2021-03-17
+	* Improved bash scripting for auto-completion
+
