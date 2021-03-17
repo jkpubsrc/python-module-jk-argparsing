@@ -39,7 +39,7 @@ _MAIN_SCRIPT_PART = """_jk_argsparsing_completion_()
 			absCallerPath="${absInstalledCandidate}"
 		fi
 	fi
-	echo "${absCallerPath}" > foo3.txt
+	#echo "${absCallerPath}" > foo3.txt
 
 	if [ -z "${absCallerPath}" ]; then
 		COMPREPLY=""

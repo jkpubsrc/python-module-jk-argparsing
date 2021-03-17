@@ -42,7 +42,7 @@ setup(
 		"jk_argparsing.textmodel",
 		"jk_argparsing.textprimitives",
 	],
-	version = "0.2021.3.17",
+	version = "0.2021.3.17.1",
 	zip_safe = False,
 	long_description = readme(),
 	long_description_content_type="text/markdown",

@@ -37,12 +37,8 @@ import jk_argparsing
 
 TODO
 
-Contact Information
+Author(s)
 -------------------
-
-This is Open Source code. That not only gives you the possibility of freely using this code it also
-allows you to contribute. Feel free to contact the author(s) of this software listed below, either
-for comments, collaboration requests, suggestions for improvement or reporting bugs:
 
 * Jürgen Knauth: pubsrc@binary-overflow.de
 
