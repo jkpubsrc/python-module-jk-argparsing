@@ -4,6 +4,7 @@
 import os
 import sys
 import pwd
+import typing
 
 import jk_utils
 import jk_terminal_essentials
@@ -522,8 +523,12 @@ class ArgsParser(object):
 
 		# content
 		for chapter in self.__descriptionChapters:
-			assert isinstance(chapter, TSection)
-			ret.addBlock(self.__convertTSection(v, chapter))
+			if isinstance(chapter, TBlock):
+				ret.addBlock(TextBlock(v.section1_indent, chapter.text))
+				ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
+			else:
+				assert isinstance(chapter, TSection)
+				ret.addBlock(self.__convertTSection(v, chapter))
 
 		return ret
 	#
@@ -738,12 +743,20 @@ class ArgsParser(object):
 		return self
 	#
 
-	def addDescriptionChapter(self, chapterName:str, paragraphs:list = None) -> TSection:
-		if isinstance(paragraphs, str):
-			sec = TSection(chapterName, [ paragraphs ])
+	def addDescriptionChapter(self, chapterName:typing.Union[str,None], paragraphs:typing.Sequence = None) -> TSection:
+		if chapterName is None:
+			for p in paragraphs:
+				self.__descriptionChapters.append(TBlock(p))
+			sec = None
+
 		else:
-			sec = TSection(chapterName, paragraphs)
-		self.__descriptionChapters.append(sec)
+			assert isinstance(chapterName, str)
+			if isinstance(paragraphs, str):
+				sec = TSection(chapterName, [ paragraphs ])
+			else:
+				sec = TSection(chapterName, paragraphs)
+			self.__descriptionChapters.append(sec)
+
 		return sec
 	#
 

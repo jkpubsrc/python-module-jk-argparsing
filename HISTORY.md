@@ -12,3 +12,6 @@
 * 2021-03-17
 	* Improved bash scripting for auto-completion
 
+* 2021-04-28
+	* Allow to add description text as a "chapter" while not providing a title
+

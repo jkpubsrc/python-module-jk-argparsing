@@ -18,6 +18,9 @@ class TSection(object):
 	#
 	# Constructor method.
 	#
+	# @param		str title				The title of this section
+	# @param		(str|TBlock|TSection)[] contentBlocks		The paragraphs of this section
+	#
 	def __init__(self, title:str, contentBlocks:typing.Sequence):
 		assert isinstance(title, str)
 		assert title
@@ -25,8 +28,6 @@ class TSection(object):
 
 		self.__contentBlocks = []
 		if contentBlocks:
-			if isinstance(contentBlocks, str):
-				raise TypeError(str(type(contentBlocks)))
 			for content in contentBlocks:
 				self.addContentBlock(content)
 	#
@@ -53,7 +54,10 @@ class TSection(object):
 	## Public Methods
 	################################################################################################################################
 
-	def addContentBlock(self, content:typing.Union[str,TBlock]):
+	#
+	# @param		str|TBlock|TSection content			The content to add
+	#
+	def addContentBlock(self, content):
 		b = None
 		if isinstance(content, TBlock):
 			b = content
