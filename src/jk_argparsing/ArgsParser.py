@@ -6,7 +6,6 @@ import sys
 import pwd
 import typing
 
-import jk_utils
 import jk_terminal_essentials
 
 from .ArgOption import ArgOption

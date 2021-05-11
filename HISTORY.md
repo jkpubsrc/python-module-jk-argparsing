@@ -15,3 +15,6 @@
 * 2021-04-28
 	* Allow to add description text as a "chapter" while not providing a title
 
+* 2021-05-11
+	* Removed unnecessary dependency
+
