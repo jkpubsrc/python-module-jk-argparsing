@@ -5,7 +5,10 @@ import os
 import re
 import typing
 
-from enum import Enum
+from .EnumParameterType import EnumParameterType
+from .OptionParameter import OptionParameter
+
+
 
 
 
@@ -16,175 +19,14 @@ class ArgItemBase(object):
 	## Nested Classes
 	################################################################################################################################
 
-	class EnumParameterType(Enum):
-
-		String = 1
-		Int32 = 2
-		File = 3
-		Directory = 4
-		FileOrDirectory = 5
-
-	#
-
-	################################################################################################################################
-
-	class OptionParameter(object):
-
-		def __init__(self, displayName, option, type):
-			assert isinstance(displayName, str)
-			#assert isinstance(option, ArgOption)
-			assert isinstance(type, ArgItemBase.EnumParameterType)
-
-			self.displayName = displayName
-			self.option = option
-			self.type = type
-			self.minLength = None
-			self.maxLength = None
-			self.minValue = None
-			self.maxValue = None
-			self.strEnumValues = None
-			self.strRegEx = None
-			self.mustExist = None
-			self.baseDir = None
-			self.toAbsolutePath = None
-		#
-
-		def parse(self, sinput):
-			assert isinstance(sinput, str)
-
-			if self.type == ArgItemBase.EnumParameterType.String:
-				return self.__parseString(sinput)
-			elif self.type == ArgItemBase.EnumParameterType.Int32:
-				return self.__parseInt32(sinput)
-			elif self.type == ArgItemBase.EnumParameterType.File:
-				return self.__parseFile(sinput)
-			elif self.type == ArgItemBase.EnumParameterType.Directory:
-				return self.__parseDirectory(sinput)
-			elif self.type == ArgItemBase.EnumParameterType.FileOrDirectory:
-				return self.__parseFileOrDirectory(sinput)
-			else:
-				raise Exception("Implementation error!")
-		#
-
-		def __parseFile(self, sinput):
-			assert isinstance(sinput, str)
-
-			if self.minLength is not None:
-				if len(sinput) < self.minLength:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.maxLength is not None:
-				if len(sinput) < self.maxLength:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.toAbsolutePath:
-				if self.baseDir:
-					sinput = os.path.join(self.baseDir, sinput)
-				sinput = os.path.abspath(sinput)
-
-			if self.mustExist:
-				if not os.path.isfile(sinput):
-					raise Exception("File specified for option " + repr(str(self.option)) + " does not exist: " + repr(sinput))			# NEW FIX
-
-			return sinput
-		#
-
-		def __parseFileOrDirectory(self, sinput):
-			assert isinstance(sinput, str)
-
-			if self.minLength is not None:
-				if len(sinput) < self.minLength:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.maxLength is not None:
-				if len(sinput) < self.maxLength:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.toAbsolutePath:
-				if self.baseDir:
-					sinput = os.path.join(self.baseDir, sinput)
-				sinput = os.path.abspath(sinput)
-
-			if self.mustExist:
-				if not os.path.exists(sinput):
-					raise Exception("File or directory specified for option " + repr(str(self.option)) + " does not exist: " + repr(sinput))
-
-			return sinput
-		#
-
-		def __parseDirectory(self, sinput):
-			assert isinstance(sinput, str)
-
-			if self.minLength is not None:
-				if len(sinput) < self.minLength:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.maxLength is not None:
-				if len(sinput) < self.maxLength:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.toAbsolutePath:
-				if self.baseDir:
-					sinput = os.path.join(self.baseDir, sinput)
-				sinput = os.path.abspath(sinput)
-
-			if self.mustExist:
-				if not os.path.isdir(sinput):
-					raise Exception("Directory specified for option " + repr(str(self.option)) + " does not exist: " + repr(sinput))
-
-			return sinput
-		#
-
-		def __parseString(self, sinput):
-			assert isinstance(sinput, str)
-
-			if self.strEnumValues is not None:
-				for v in self.strEnumValues:
-					if sinput == v:
-						return sinput
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.minLength is not None:
-				if len(sinput) < self.minLength:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.maxLength is not None:
-				if len(sinput) < self.maxLength:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.strRegEx is not None:
-				regex = re.compile(self.strRegEx)
-				m = regex.match(sinput)
-				if m is None:
-					raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			return sinput
-		#
-
-		def __parseInt32(self, sinput):
-			try:
-				n = int(sinput)
-			except:
-				raise Exception("Argument is not a valid integer value at option " + repr(str(self.option)) + ": " + repr(sinput))
-
-			if self.minValue is not None:
-				if n < self.minValue:
-					raise Exception("Argument too small for option " + repr(str(self.option)) + ": " + repr(sinput))
-			if self.maxValue is not None:
-				if n > self.maxValue:
-					raise Exception("Argument too big for option " + repr(str(self.option)) + ": " + repr(sinput))
-			return n
-		#
-
-	#
-
 	################################################################################################################################
 	## Constructors
 	################################################################################################################################
 
 	def __init__(self):
-		self.__optionParameters = []
+		self._optionParameters = []							# receives instances of OptionParameter that indicate what kind of arguments are expected
 		self._isShortOption = False
+		self._canHaveNoMoreExpectations = False				# set this to True in order to prevent any more calls to an expect...-method
 	#
 
 	################################################################################################################################
@@ -193,7 +35,7 @@ class ArgItemBase(object):
 
 	@property
 	def optionParameters(self) -> list:
-		return self.__optionParameters
+		return self._optionParameters
 	#
 
 	################################################################################################################################
@@ -208,6 +50,9 @@ class ArgItemBase(object):
 			toAbsolutePath:bool = False,
 			baseDir:str = None,
 		):
+
+		if self._canHaveNoMoreExpectations:
+			raise Exception("After a list argument no other arguments can be used!")
 
 		assert isinstance(displayName, str)
 
@@ -227,13 +72,13 @@ class ArgItemBase(object):
 		#if self._isShortOption:
 		#	raise Exception("Short options cannot have arguments!")
 
-		p = ArgItemBase.OptionParameter(displayName, self, ArgItemBase.EnumParameterType.FileOrDirectory)
+		p = OptionParameter(displayName, self, EnumParameterType.FileOrDirectory)
 		p.minLength = minLength
 		p.maxLength = maxLength
 		p.mustExist = mustExist
 		p.toAbsolutePath = toAbsolutePath
 		p.baseDir = baseDir
-		self.__optionParameters.append(p)
+		self._optionParameters.append(p)
 
 		return self
 	#
@@ -247,6 +92,9 @@ class ArgItemBase(object):
 			baseDir:str = None,
 		):
 
+		if self._canHaveNoMoreExpectations:
+			raise Exception("After a list argument no other arguments can be used!")
+
 		assert isinstance(displayName, str)
 
 		if minLength is not None:
@@ -263,13 +111,13 @@ class ArgItemBase(object):
 		#if self._isShortOption:
 		#	raise Exception("Short options cannot have arguments!")
 
-		p = ArgItemBase.OptionParameter(displayName, self, ArgItemBase.EnumParameterType.File)
+		p = OptionParameter(displayName, self, EnumParameterType.File)
 		p.minLength = minLength
 		p.maxLength = maxLength
 		p.mustExist = mustExist
 		p.toAbsolutePath = toAbsolutePath
 		p.baseDir = baseDir
-		self.__optionParameters.append(p)
+		self._optionParameters.append(p)
 
 		return self
 	#
@@ -283,6 +131,9 @@ class ArgItemBase(object):
 			baseDir:str = None,
 		):
 
+		if self._canHaveNoMoreExpectations:
+			raise Exception("After a list argument no other arguments can be used!")
+
 		assert isinstance(displayName, str)
 
 		if minLength is not None:
@@ -299,13 +150,13 @@ class ArgItemBase(object):
 		#if self._isShortOption:
 		#	raise Exception("Short options cannot have arguments!")
 
-		p = ArgItemBase.OptionParameter(displayName, self, ArgItemBase.EnumParameterType.Directory)
+		p = OptionParameter(displayName, self, EnumParameterType.Directory)
 		p.minLength = minLength
 		p.maxLength = maxLength
 		p.mustExist = mustExist
 		p.toAbsolutePath = toAbsolutePath
 		p.baseDir = baseDir
-		self.__optionParameters.append(p)
+		self._optionParameters.append(p)
 
 		return self
 	#
@@ -317,6 +168,9 @@ class ArgItemBase(object):
 			enumValues:typing.Union[list,tuple] = None,
 			regex:str = None,
 		):
+
+		if self._canHaveNoMoreExpectations:
+			raise Exception("After a list argument no other arguments can be used!")
 
 		assert isinstance(displayName, str)
 
@@ -346,12 +200,12 @@ class ArgItemBase(object):
 		#if self._isShortOption:
 		#	raise Exception("Short options cannot have arguments!")
 
-		p = ArgItemBase.OptionParameter(displayName, self, ArgItemBase.EnumParameterType.String)
+		p = OptionParameter(displayName, self, EnumParameterType.String)
 		p.minLength = minLength
 		p.maxLength = maxLength
 		p.strEnumValues = enumValues
 		p.strRegEx = regex
-		self.__optionParameters.append(p)
+		self._optionParameters.append(p)
 
 		return self
 	#
@@ -361,6 +215,9 @@ class ArgItemBase(object):
 			minValue:int = None,
 			maxValue:int = None,
 		):
+
+		if self._canHaveNoMoreExpectations:
+			raise Exception("After a list argument no other arguments can be used!")
 
 		assert isinstance(displayName, str)
 
@@ -372,15 +229,13 @@ class ArgItemBase(object):
 		#if self._isShortOption:
 		#	raise Exception("Short options cannot have arguments!")
 
-		p = ArgItemBase.OptionParameter(displayName, self, ArgItemBase.EnumParameterType.Int32)
+		p = OptionParameter(displayName, self, EnumParameterType.Int32)
 		p.minValue = minValue
 		p.maxValue = maxValue
-		self.__optionParameters.append(p)
+		self._optionParameters.append(p)
 
 		return self
 	#
-
-
 
 #
 

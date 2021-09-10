@@ -10,7 +10,7 @@ Instances of class `ArgOption` represent an option that can be specified on the 
 
 Inherited from `ArgItemBase`:
 
-* `ArgItemBase.OptionParameter[] optionParameters`
+* `OptionParameter[] optionParameters`
 
 # Read-Write Properties
 

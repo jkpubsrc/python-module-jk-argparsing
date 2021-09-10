@@ -18,3 +18,11 @@
 * 2021-05-11
 	* Removed unnecessary dependency
 
+* 2021-09-10
+	* Documentation updated
+	* Better and more examples
+	* Text updated in README
+	* Added compatiblity to Microsoft Windows
+
+
+

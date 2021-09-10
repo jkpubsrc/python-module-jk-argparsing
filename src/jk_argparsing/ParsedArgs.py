@@ -64,7 +64,8 @@ class ParsedArgs(object):
 		printFunction(prefix + "]")
 	#
 
-	def parseNextCommand(self):
+	"""
+	def parseNextCommand(self) -> tuple:
 		if self.__bError:															# NEW IMPL
 			raise Exception("There have been previous parsing errors!")				# NEW IMPL
 
@@ -89,7 +90,49 @@ class ParsedArgs(object):
 
 		return (cmd.name, optionArgs)
 	#
+	"""
 
+	#
+	# Parse the next command in the command line.
+	#
+	# Note: <c>self.__argsPos</c> stores the current parsing cursor.
+	#
+	# @return		str cmdName			The name of the command. <c>None</c> is returned if there is no more data to process.
+	# @return		list parsedArgs		The arguments for this command. <c>None</c> is returned if there is no more data to process.
+	#
+	def parseNextCommand(self) -> tuple:
+		if self.__bError:															# NEW IMPL
+			raise Exception("There have been previous parsing errors!")				# NEW IMPL
+
+		if self.__argsPos >= len(self.programArgs):
+			# end of parsing has been reached
+			return (None, None)
+
+		# retrieve the command in the line
+
+		nextCmdCandidate = self.programArgs[self.__argsPos]
+		cmd = self.__commands.get(nextCmdCandidate, None)
+		if cmd is None:
+			self.__bError = True													# NEW IMPL
+			raise Exception("Unknown command: \"" + nextCmdCandidate + "\"")
+		self.__argsPos += 1
+
+		# now process the arguments of the command
+
+		parsedArgs = []
+		for cmdOptionParam in cmd.optionParameters:
+			_parsingResult, _n = cmdOptionParam.parse2(self.programArgs, self.__argsPos)
+			if _n <= 0:
+				raise Exception("Option " + cmd.name + " expects more arguments!")
+			parsedArgs.append(_parsingResult)
+			self.__argsPos += _n
+
+		# return data
+
+		return (cmd.name, parsedArgs)
+	#
+
+	"""
 	def parseCommands(self):														# NEW IMPL
 		if self.__bError:
 			raise Exception("There have been previous parsing errors!")
@@ -112,6 +155,15 @@ class ParsedArgs(object):
 			self.__argsPos += len(cmd.optionParameters)
 
 			yield (cmd.name, optionArgs)
+	#
+	"""
+
+	def parseCommands(self):
+		while True:
+			cmdName, parsedArgs = self.parseNextCommand()
+			if cmdName is None:
+				break
+			yield cmdName, parsedArgs
 	#
 
 #

@@ -3,7 +3,6 @@
 
 import os
 import sys
-import pwd
 import typing
 
 import jk_terminal_essentials
@@ -456,9 +455,14 @@ class ArgsParser(object):
 		keys.sort()
 		for key in keys:
 			cmd = self.__commands[key]
+
+			if cmd.isHidden:
+				continue
+
 			s = cmd.name
 			for op in cmd.optionParameters:
 				s += " " + op.displayName
+
 			grid.addRow([
 				TextBlock(0, s, v.commands_fgColor),
 				TextBlock(0, cmd.description),
@@ -624,13 +628,14 @@ class ArgsParser(object):
 		return (name in self.__commands) or (name in self.__commandsExtra)
 	#
 
-	def createCommand(self, name:str, description:str) -> ArgCommand:
+	def createCommand(self, name:str, description:str, bHidden:bool = False) -> ArgCommand:
 		assert isinstance(name, str)
 		assert name
 		assert isinstance(description, str)
 		assert description
+		assert isinstance(bHidden, bool)
 
-		o = ArgCommand(name, description)
+		o = ArgCommand(name, description, bHidden)
 		if (o.name in self.__commands) or o.name in self.__commandsExtra:
 			raise Exception("A command named '-" + o.name + "' already exists!")
 		self.__commands[o.name] = o
@@ -682,9 +687,9 @@ class ArgsParser(object):
 		return o
 	#
 
-	def showHelp(self):
+	def showHelp(self, bColor:bool = None):
 		print()
-		for line in self.buildHelpText():
+		for line in self.buildHelpText(bColor = bColor):
 			print(line)
 		print()
 	#

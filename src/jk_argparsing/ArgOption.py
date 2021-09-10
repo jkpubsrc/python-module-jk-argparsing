@@ -87,13 +87,13 @@ class ArgOption(ArgItemBase):
 	def __str__(self):
 		if self.__longName is not None:
 			s = "--" + self.__longName
-			#for op in self.__optionParameters:
+			#for op in self._optionParameters:
 			#	s += " " + op.displayName
 			return s
 
 		if self.__shortName is not None:
 			s = "-" + self.__shortName
-			#for op in self.__optionParameters:
+			#for op in self._optionParameters:
 			#	s += " " + op.displayName
 			return s
 

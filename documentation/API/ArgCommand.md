@@ -7,7 +7,7 @@ Instances of class `ArgCommand` represent a command line argument with parameter
 
 Inherited from `ArgItemBase`:
 
-* `ArgItemBase.OptionParameter[] optionParameters`
+* `OptionParameter[] optionParameters`
 
 # Read-Write Properties
 

@@ -4,7 +4,8 @@
 
 
 import os
-import pwd
+if os.name != "nt":
+	import pwd
 
 
 
