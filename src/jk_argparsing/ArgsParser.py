@@ -637,7 +637,7 @@ class ArgsParser(object):
 
 		o = ArgCommand(name, description, bHidden)
 		if (o.name in self.__commands) or o.name in self.__commandsExtra:
-			raise Exception("A command named '-" + o.name + "' already exists!")
+			raise Exception("A command named '" + o.name + "' already exists!")
 		self.__commands[o.name] = o
 
 		return o
@@ -651,7 +651,7 @@ class ArgsParser(object):
 
 		o = ArgCommand(name, description)
 		if (o.name in self.__commands) or o.name in self.__commandsExtra:
-			raise Exception("A command named '-" + o.name + "' already exists!")
+			raise Exception("A command named '" + o.name + "' already exists!")
 		self.__commandsExtra[o.name] = o
 
 		return o

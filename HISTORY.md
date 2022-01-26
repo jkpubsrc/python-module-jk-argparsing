@@ -24,5 +24,8 @@
 	* Text updated in README
 	* Added compatiblity to Microsoft Windows
 
+* 2022-01-26
+	* Bugfix: output improved
+
 
 

@@ -244,6 +244,40 @@ for cmdName, cmdArgs in parsedArgs.parseCommands():
 		raise Exception("Implementation error!")
 ```
 
+## Expectations for options and commands
+
+Options and commands can have "expections". An expectation is an argument a user must append to the option. Example:
+
+> `yourprogram --output-file some/path/to/a/file do-something`
+
+Or:
+
+> `yourprogram process-file some/path/to/a/file`
+
+Here ...
+* `--output-file` would be an option that expects one argument,
+* `do-something` would be a command that has no arguments and
+* `process-file` would be a command that expects one argument.
+
+Here is how you could define such a command:
+
+```python
+ap.createCommand("process-file", "Load a settings file.") \
+	.expectFile("<settingsFile>", minLength=1, mustExist=True, toAbsolutePath=True)
+```
+
+The following expectations for arguments to options and commands are available:
+
+| Method to invoke				| Description											|
+| ---							| ---													|
+| `expectFileOrDirectory(..)`	| Provided argument must be a file or directory			|
+| `expectFile(..)`				| Provided argument must be a file						|
+| `expectDirectory(..)`			| Provided argument must be a directory					|
+| `expectString(..)`			| Provided argument must be a text string				|
+| `expectInt32(..)`				| Provided argument must be an integer number			|
+
+NOTE: By definition `expectString(..)`, `expectFileOrDirectory(..)`, `expectFile(..)` and `expectDirectory(..)` are quite similar: They all specify that a string is expected. However, each method will support constraints. While `expectString(..)` only supports standard string constraints, the other methods will assume that the specified string denotes a file or directory.
+
 Author(s)
 -------------------
 
