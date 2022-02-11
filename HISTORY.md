@@ -27,5 +27,6 @@
 * 2022-01-26
 	* Bugfix: output improved
 
-
+* 2022-02-10
+	* Added support for lists in description texts
 

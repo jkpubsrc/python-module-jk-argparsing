@@ -17,6 +17,8 @@ from .textmodel.VisSettings import VisSettings
 from .textprimitives import *
 from .textmodel import *
 from .BashCompletionLocal import BashCompletionLocal
+from .impl.ImplementationErrorException import ImplementationErrorException
+
 
 
 
@@ -254,7 +256,7 @@ class ArgsParser(object):
 	## Helper Methods
 	################################################################################################################################
 
-	def __windowWidth(self):
+	def __windowWidth(self) -> int:
 		try:
 			sz = os.get_terminal_size()
 			return min(sz.columns - 1, 140)
@@ -262,11 +264,13 @@ class ArgsParser(object):
 			return 160
 	#
 
-	def __eatLongOption(self, optionName, args, argsPos, ret):
+	def __eatLongOption(self, optionName:str, args:list, argsPos:int, ret:ParsedArgs):
 		assert isinstance(optionName, str)
 		assert isinstance(args, list)
 		assert isinstance(argsPos, int)
 		assert isinstance(ret, ParsedArgs)
+
+		# ----
 
 		o = self.__longArgs.get(optionName, None)
 		if o is None:
@@ -285,11 +289,13 @@ class ArgsParser(object):
 		return (o, argsPos)
 	#
 
-	def __eatShortOption(self, optionName, args, argsPos, ret):
+	def __eatShortOption(self, optionName:str, args:list, argsPos:int, ret:ParsedArgs):
 		assert isinstance(optionName, str)
 		assert isinstance(args, list)
 		assert isinstance(argsPos, int)
 		assert isinstance(ret, ParsedArgs)
+
+		# ----
 
 		o = self.__shortArgs.get(optionName, None)
 		if o is None:
@@ -324,6 +330,11 @@ class ArgsParser(object):
 	"""
 
 	def __convertTSection(self, v:VisSettings, chapter:TSection) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+		assert isinstance(chapter, TSection)
+
+		# ----
+
 		sec = TextBlockSequence(0, 0)
 
 		sec.addBlock(TextBlock(v.title2_indent, chapter.title, v.title2_fgColor))
@@ -337,15 +348,29 @@ class ArgsParser(object):
 	#
 
 	def __appendTitle1WithGap(self, v:VisSettings, title:str, ret:TextBlockSequence):
+		assert isinstance(v, VisSettings)
+		assert isinstance(title, str)
+		assert isinstance(ret, TextBlockSequence)
+
+		# ----
+
 		ret.addBlock(TextBlock(v.title1_indent, v.title1_preprocessor(title) if v.title1_preprocessor else title, v.title1_fgColor))
 		ret.addBlock(TextEmpty(v.title1_paddingAfterTitle))
 	#
 
 	def _txtCreateName(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		return TextBlock(0, self.__appName + " - " + self.__shortAppDescription, v.appName_fgColor)
 	#
 
 	def _txtCreateSynopsis(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		if not self.__synopsisList:
 			return None
 
@@ -362,6 +387,10 @@ class ArgsParser(object):
 	#
 
 	def _txtCreateOptions(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		if not self.__options:
 			return None
 
@@ -398,6 +427,10 @@ class ArgsParser(object):
 	#
 
 	def _txtCreateAuthors(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		if not self.__authorsList:
 			return None
 
@@ -419,6 +452,10 @@ class ArgsParser(object):
 	#
 
 	def _txtReturnCodes(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		if not self.__returnCodesList:
 			return None
 
@@ -440,6 +477,10 @@ class ArgsParser(object):
 	#
 
 	def _txtCreateCommands(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		if not self.__commands:
 			return None
 
@@ -472,6 +513,10 @@ class ArgsParser(object):
 	#
 
 	def _txtCreateExtraCommands(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		if not self.__commandsExtra:
 			return None
 
@@ -499,6 +544,10 @@ class ArgsParser(object):
 	#
 
 	def _txtCreateLicense(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		if not self.__licenseTextLines:
 			return None
 
@@ -516,6 +565,10 @@ class ArgsParser(object):
 	#
 
 	def _txtCreateDescription(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		if not self.__descriptionChapters:
 			return None
 
@@ -529,14 +582,19 @@ class ArgsParser(object):
 			if isinstance(chapter, TBlock):
 				ret.addBlock(TextBlock(v.section1_indent, chapter.text))
 				ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
-			else:
-				assert isinstance(chapter, TSection)
+			elif isinstance(chapter, TSection):
 				ret.addBlock(self.__convertTSection(v, chapter))
+			else:
+				raise ImplementationErrorException()
 
 		return ret
 	#
 
 	def _txtCreateExtraHead(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
 
 		if not self.__extraHeadChapters:
@@ -544,7 +602,11 @@ class ArgsParser(object):
 
 		ret = TextBlockSequence(0, 0)
 
-		for chapter in self.__extraHeadChapters:
+		for n, chapter in enumerate(self.__extraHeadChapters):
+			assert isinstance(chapter, TSection)
+
+			if n > 0:
+				ret.addBlock(TextEmpty(v.section1_gapBetweenSections))
 
 			# title
 			self.__appendTitle1WithGap(v, chapter.title, ret)
@@ -557,14 +619,24 @@ class ArgsParser(object):
 					bNeedGap = False
 				if isinstance(sub, TSection):
 					ret.addBlock(self.__convertTSection(v, sub))
-				else:
+				elif isinstance(sub, TBlock):
 					ret.addBlock(TextBlock(v.section1_indent, sub.text))
 					bNeedGap = True
+				elif isinstance(sub, TList):
+					for item in sub.items:
+						ret.addBlock(TextBlock(v.section1_indent, item, listIndent=v.listIndent, listChar=v.listChar))
+					bNeedGap = True
+				else:
+					raise ImplementationErrorException()
 
 		return ret
 	#
 
 	def _txtCreateExtraMiddle(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
 
 		if not self.__extraMiddleChapters:
@@ -572,7 +644,11 @@ class ArgsParser(object):
 
 		ret = TextBlockSequence(0, 0)
 
-		for chapter in self.__extraMiddleChapters:
+		for n, chapter in enumerate(self.__extraMiddleChapters):
+			assert isinstance(chapter, TSection)
+
+			if n > 0:
+				ret.addBlock(TextEmpty(v.section1_gapBetweenSections))
 
 			# title
 			self.__appendTitle1WithGap(v, chapter.title, ret)
@@ -585,14 +661,24 @@ class ArgsParser(object):
 					bNeedGap = False
 				if isinstance(sub, TSection):
 					ret.addBlock(self.__convertTSection(v, sub))
-				else:
+				elif isinstance(sub, TBlock):
 					ret.addBlock(TextBlock(v.section1_indent, sub.text))
 					bNeedGap = True
+				elif isinstance(sub, TList):
+					for item in sub.items:
+						ret.addBlock(TextBlock(v.section1_indent, item, listIndent=v.listIndent, listChar=v.listChar))
+					bNeedGap = True
+				else:
+					raise ImplementationErrorException()
 
 		return ret
 	#
 
 	def _txtCreateExtraEnd(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
 		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
 
 		if not self.__extraEndChapters:
@@ -600,7 +686,11 @@ class ArgsParser(object):
 
 		ret = TextBlockSequence(0, 0)
 
-		for chapter in self.__extraEndChapters:
+		for n, chapter in enumerate(self.__extraEndChapters):
+			assert isinstance(chapter, TSection)
+
+			if n > 0:
+				ret.addBlock(TextEmpty(v.section1_gapBetweenSections))
 
 			# title
 			self.__appendTitle1WithGap(v, chapter.title, ret)
@@ -613,9 +703,15 @@ class ArgsParser(object):
 					bNeedGap = False
 				if isinstance(sub, TSection):
 					ret.addBlock(self.__convertTSection(v, sub))
-				else:
+				elif isinstance(sub, TBlock):
 					ret.addBlock(TextBlock(v.section1_indent, sub.text))
 					bNeedGap = True
+				elif isinstance(sub, TList):
+					for item in sub.items:
+						ret.addBlock(TextBlock(v.section1_indent, item, listIndent=v.listIndent, listChar=v.listChar))
+					bNeedGap = True
+				else:
+					raise ImplementationErrorException()
 
 		return ret
 	#
@@ -625,6 +721,10 @@ class ArgsParser(object):
 	################################################################################################################################
 
 	def hasCommand(self, name:str) -> bool:
+		assert isinstance(name, str)
+
+		# ----
+
 		return (name in self.__commands) or (name in self.__commandsExtra)
 	#
 
@@ -634,6 +734,8 @@ class ArgsParser(object):
 		assert isinstance(description, str)
 		assert description
 		assert isinstance(bHidden, bool)
+
+		# ----
 
 		o = ArgCommand(name, description, bHidden)
 		if (o.name in self.__commands) or o.name in self.__commandsExtra:
@@ -648,6 +750,8 @@ class ArgsParser(object):
 		assert name
 		assert isinstance(description, str)
 		assert description
+
+		# ----
 
 		o = ArgCommand(name, description)
 		if (o.name in self.__commands) or o.name in self.__commandsExtra:
@@ -800,8 +904,8 @@ class ArgsParser(object):
 				self._txtCreateOptions,
 				self._txtCreateCommands,
 				self._txtCreateExtraCommands,
-				self._txtReturnCodes,
 				self._txtCreateExtraEnd,
+				self._txtReturnCodes,
 				self._txtCreateAuthors,
 				self._txtCreateLicense,
 			]:

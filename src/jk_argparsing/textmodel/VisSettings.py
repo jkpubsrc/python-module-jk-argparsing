@@ -28,6 +28,9 @@ class VisSettings(object):
 		self.title1_indent = 0
 		self.title1_paddingAfterTitle = 1
 
+		self.listIndent = 2
+		self.listChar = "-"
+
 		self.section1_indent = 4
 		# the vertical distance between blocks on level 1
 		self.section1_gapBetweenSections = 1

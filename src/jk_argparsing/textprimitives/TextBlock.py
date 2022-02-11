@@ -23,12 +23,32 @@ class TextBlock(ITextBlock):
 	## Constructor
 	################################################################################################################################
 
-	def __init__(self, indent:int, paragraphText:str, color:str = None):
+	def __init__(self, indent:int, paragraphText:str, color:str = None, listIndent:int = None, listChar:str = None):
+		assert isinstance(indent, int)
+		assert isinstance(paragraphText, str)
+		if color is not None:
+			assert isinstance(color, str)
+		if listIndent is not None:
+			assert isinstance(listIndent, int)
+			assert listIndent > 0
+		if listChar is not None:
+			assert isinstance(listChar, str)
+			assert len(listChar) == 1
+			assert listIndent is not None
+
+		# ----
+
 		self.__minTextWidth = 0				# the minimum width calculated by the minimum word length
 		self.__wordTokens = []				# stores tuples: word length, word
 		self.__indent = indent				# the indentation
 		self.__preferredWidth = None
 		self.__maxTextWidth = 0				# this will receive the width required for the whole text to be in a single line
+		self.__listIndent = 0
+		self.__listPrefix = None
+
+		if listChar is not None:
+			self.__listIndent = listIndent
+			self.__listPrefix = listChar + " " * (listIndent - 1)
 
 		paragraphText = paragraphText.strip()
 		if paragraphText:
@@ -55,7 +75,8 @@ class TextBlock(ITextBlock):
 	@property
 	def preferredWidth(self) -> int:
 		if self.__preferredWidth is None:
-			return self.__indent + self.__maxTextWidth
+			return self.__indent + self.__maxTextWidth + self.__listIndent
+
 		return self.__preferredWidth
 	#
 
@@ -94,12 +115,13 @@ class TextBlock(ITextBlock):
 	#
 	def __generateLines(self, bColor:bool):
 		# calculate the layouting width available
-		nAvailableWidth = self.preferredWidth - self.__indent
+		nAvailableWidth = self.preferredWidth - self.__indent - self.__listIndent
 
 		# layout lines
 
 		lineBuffer = []
 		currentLen = 0
+		bIsFirstLineFragment = True
 		for wlen, w in self.__wordTokens:
 			expectedLengthAfterAppend = currentLen + (len(lineBuffer) > 0) + wlen
 			if lineBuffer and (expectedLengthAfterAppend > nAvailableWidth):
@@ -108,7 +130,11 @@ class TextBlock(ITextBlock):
 				lenS = len(s)
 				if bColor and self.__color:
 					s = self.__color + s + _RESET
-				yield XLineFragment(self.__indent, s, lenS)
+				if bIsFirstLineFragment and (self.__listIndent > 0):
+					yield XLineFragment(self.__indent, self.__listPrefix + s, lenS)
+				else:
+					yield XLineFragment(self.__indent + self.__listIndent, s, lenS)
+				bIsFirstLineFragment = False
 				# clear buffer
 				lineBuffer.clear()
 				# prepare append
@@ -124,7 +150,11 @@ class TextBlock(ITextBlock):
 			lenS = len(s)
 			if bColor and self.__color:
 				s = self.__color + s + _RESET
-			yield XLineFragment(self.__indent, s, lenS)
+			if bIsFirstLineFragment and (self.__listIndent > 0):
+				yield XLineFragment(self.__indent, self.__listPrefix + s, lenS)
+			else:
+				yield XLineFragment(self.__indent + self.__listIndent, s, lenS)
+			bIsFirstLineFragment = False
 	#
 
 	################################################################################################################################
