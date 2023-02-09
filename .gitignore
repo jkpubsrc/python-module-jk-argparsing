@@ -6,3 +6,5 @@ src/*.egg-info/
 .vscode
 **/__OLD/
 TEMP/
+*.bak
+*.old

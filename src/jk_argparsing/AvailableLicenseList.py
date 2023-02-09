@@ -1,7 +1,9 @@
 
 
+import typing
 
 from .LicenseInfo import LicenseInfo
+
 
 
 
@@ -119,29 +121,22 @@ class AvailableLicenseList(object):
 			]),
 	]
 
-
-
 	def __init__(self):
-		self.__licenseInfos = {}
+		self.__licenseInfos:typing.Dict[str,LicenseInfo] = {}
 
 		for li in AvailableLicenseList.__LICENSES:
 			if li is not None:
 				self.__licenseInfos[li.id] = li
 	#
 
-
-
 	@property
-	def ids(self):
+	def ids(self) -> typing.List[str]:
 		ids = list(self.__licenseInfos.keys())
 		ids.sort()
 		return ids
 	#
 
-
-
-	def getText(self, id, **kwargs):
-
+	def getText(self, id:str, **kwargs) -> typing.Union[typing.List[str],None]:
 		id = id.lower()
 		li = self.__licenseInfos.get(id, None)
 		if li is None:
@@ -152,17 +147,13 @@ class AvailableLicenseList(object):
 			return li.toString(**kwargs)
 	#
 
-
-
-	def get(self, id):
+	def get(self, id:str) -> typing.Union[LicenseInfo,None]:
 		id = id.lower()
 		li = self.__licenseInfos.get(id, None)
 		if li is None:
 			return None
 		return li
 	#
-
-
 
 #
 

@@ -24,7 +24,7 @@ setup(
 		"Programming Language :: Python :: 3",
 	],
 	description = "A python module for parsing of program arguments.",
-	include_package_data = False,
+	include_package_data = True,
 	install_requires = [
 		"jk_terminal_essentials",
 	],
@@ -37,14 +37,20 @@ setup(
 	],
 	license = "Apache2",
 	name = "jk_argparsing",
+	package_data = {
+		"": [
+		],
+	},
 	packages = [
 		"jk_argparsing",
 		"jk_argparsing.textmodel",
 		"jk_argparsing.textprimitives",
 		"jk_argparsing.impl",
 	],
-	version = "0.2022.2.11",
+	scripts = [
+	],
+	version = '0.2023.2.8',
 	zip_safe = False,
 	long_description = readme(),
-	long_description_content_type="text/markdown",
+	long_description_content_type = "text/markdown",
 )

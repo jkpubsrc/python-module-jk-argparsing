@@ -1,3 +1,12 @@
+* 2017-01-19
+	* first version of the module, not yet released
+
+* 2017-07.22
+	* second version of the module, first public release
+
+* 2019-04-13
+	* added generation of bash completion; changed project management to devon;
+
 * 2021-03-07
 	* Added documentation
 	* Reformatted source code
@@ -29,4 +38,7 @@
 
 * 2022-02-10
 	* Added support for lists in description texts
+
+* 2023-02-08
+	* Added: type hints
 

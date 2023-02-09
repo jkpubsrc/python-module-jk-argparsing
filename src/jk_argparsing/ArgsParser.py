@@ -191,19 +191,18 @@ class ArgsParser(object):
 
 		# variables
 
-		self.__commands = {}
-		self.__commandsExtra = {}
-		self.__longArgs = {}
-		self.__shortArgs = {}
-		self.__options = []
-		self.__authorsList = []				# stores tuples of `(author-name, author-email, author-description)`
-		self.__synopsisList = []			# stores strings that hold the synopsis
-		self.__returnCodesList = []			# stores tuples of `(return-code, description)`
-		self.__appName = appName
-		self.__shortAppDescription = shortAppDescription
-		self.__appName = appName
+		self.__commands:typing.Dict[str,ArgCommand] = {}
+		self.__commandsExtra:typing.Dict[str,ArgCommand] = {}
+		self.__longArgs:typing.Dict[str,ArgOption] = {}
+		self.__shortArgs:typing.Dict[str,ArgOption] = {}
+		self.__options:typing.List[ArgOption] = []
+		self.__authorsList:typing.List[typing.Tuple[str,str,str]] = []		# stores tuples of `(author-name, author-email, author-description)`
+		self.__synopsisList:typing.List[str] = []							# stores strings that hold the synopsis
+		self.__returnCodesList:typing.List[typing.Tuple[str,str]] = []		# stores tuples of `(return-code, description)`
+		self.__appName:str = appName
+		self.__shortAppDescription:str = shortAppDescription
 		self.__optionDataDefaults = ArgsOptionDataDict()
-		self.__licenseTextLines = None
+		self.__licenseTextLines:typing.Union[typing.List[str],None] = None
 		self.__descriptionChapters = []		# stores TSection objects
 		self.__extraHeadChapters = []		# stores TSection objects
 		self.__extraMiddleChapters = []		# stores TSection objects
@@ -761,18 +760,22 @@ class ArgsParser(object):
 		return o
 	#
 
-	def createOption(self, shortName, longName, description) -> ArgOption:
+	def createOption(self, shortName:typing.Union[str,None], longName:str, description:str) -> ArgOption:
 		if shortName is not None:
 			assert isinstance(shortName, str)
 			assert len(shortName) == 1
 
 		if longName is not None:
 			assert isinstance(longName, str)
+			assert longName
 
 		assert isinstance(description, str)
+		assert description
 
 		if (shortName is None) and (longName is None):
 			raise Exception("Arguments need at least a long or a short name!")
+
+		# ----
 
 		o = ArgOption(shortName, longName, description)
 
@@ -840,7 +843,7 @@ class ArgsParser(object):
 		return self
 	#
 
-	def setLicense(self, licenseID, **kwargs):
+	def setLicense(self, licenseID:str, **kwargs):
 		assert isinstance(licenseID, str)
 
 		availableLicenseList = AvailableLicenseList()
@@ -886,7 +889,7 @@ class ArgsParser(object):
 		return self
 	#
 
-	def buildHelpText(self, bColor:bool = None) -> list:
+	def buildHelpText(self, bColor:bool = None) -> typing.List[str]:
 		if bColor is None:
 			bColor = jk_terminal_essentials.checkTerminalSupportsColors()
 
@@ -920,7 +923,7 @@ class ArgsParser(object):
 		return [ str(x) for x in doc.getLines(bColor) ]
 	#
 
-	def parse(self, args = None):
+	def parse(self, args:typing.Iterable[str] = None) -> ParsedArgs:
 		if args is None:
 			args = list(sys.argv)
 			args = args[1:]

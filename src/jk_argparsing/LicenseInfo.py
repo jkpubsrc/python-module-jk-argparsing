@@ -1,13 +1,15 @@
 
 
 
+import typing
+
+
+
 
 class LicenseInfo(object):
 
-
-
-	def __init__(self, bIsFreeSoftware = None, bIsNamedLicense = None, shortLicenseName = None, longLicenseName = None,
-			licenseCopyrightOwner = None, versions = None, url = None, fullText = None):
+	def __init__(self, bIsFreeSoftware:bool = None, bIsNamedLicense:bool = None, shortLicenseName:str = None, longLicenseName:str = None,
+			licenseCopyrightOwner:str = None, versions:str = None, url:str = None, fullText:typing.List[str] = None):
 		assert isinstance(bIsFreeSoftware, bool)
 		assert isinstance(bIsNamedLicense, bool)
 		assert isinstance(shortLicenseName, str)
@@ -42,8 +44,6 @@ class LicenseInfo(object):
 		self.fullText = fullText
 	#
 
-
-
 	def __tostr(self, data):
 		if isinstance(data, (tuple, list)):
 			if len(data) == 0:
@@ -56,10 +56,8 @@ class LicenseInfo(object):
 			return str(data)
 	#
 
-
-
-	def toString(self, **kwargs):
-		ret = []
+	def toString(self, **kwargs) -> typing.List[str]:
+		ret:typing.List[str] = []
 
 		sb = ""
 
@@ -105,8 +103,6 @@ class LicenseInfo(object):
 
 		return ret
 	#
-
-
 
 #
 
