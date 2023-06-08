@@ -42,3 +42,6 @@
 * 2023-02-08
 	* Added: type hints
 
+* 2023-06-08
+	* Added: hasShortOption() and hasLongOption()
+

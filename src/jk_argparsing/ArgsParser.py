@@ -794,6 +794,38 @@ class ArgsParser(object):
 		return o
 	#
 
+	#
+	# Check if the specified short option already exists
+	#
+	def hasShortOption(self, shortName:str) -> bool:
+		assert isinstance(shortName, str)
+		assert len(shortName) == 1
+
+		# ----
+
+		for ao in self.__options:
+			if ao.shortName == shortName:
+				return True
+
+		return False
+	#
+
+	#
+	# Check if the specified long option already exists
+	#
+	def hasLongOption(self, longName:str) -> bool:
+		assert isinstance(longName, str)
+		assert len(longName) == 1
+
+		# ----
+
+		for ao in self.__options:
+			if ao.longName == longName:
+				return True
+
+		return False
+	#
+
 	def showHelp(self, bColor:bool = None):
 		print()
 		for line in self.buildHelpText(bColor = bColor):
@@ -938,7 +970,7 @@ class ArgsParser(object):
 		for key in self.__optionDataDefaults:
 			ret.optionData[key] = self.__optionDataDefaults[key]
 
-		optionsRequired = []	# List<ArgOption>()
+		optionsRequired:typing.List[ArgOption] = []
 		for ao in self.__options:
 			if ao.isRequired:
 				optionsRequired.append(ao)
