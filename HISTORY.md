@@ -45,3 +45,6 @@
 * 2023-06-08
 	* Added: hasShortOption() and hasLongOption()
 
+* 2023-06-28
+	* Added: directory option mustBeEmpty
+

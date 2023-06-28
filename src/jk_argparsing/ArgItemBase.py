@@ -1,4 +1,4 @@
-	
+
 
 
 import os
@@ -127,6 +127,7 @@ class ArgItemBase(object):
 			minLength:int = None,
 			maxLength:int = None,
 			mustExist:bool = False,
+			mustBeEmpty:bool = False,
 			toAbsolutePath:bool = False,
 			baseDir:str = None,
 		):
@@ -154,6 +155,7 @@ class ArgItemBase(object):
 		p.minLength = minLength
 		p.maxLength = maxLength
 		p.mustExist = mustExist
+		p.mustBeEmpty = mustBeEmpty
 		p.toAbsolutePath = toAbsolutePath
 		p.baseDir = baseDir
 		self._optionParameters.append(p)
@@ -211,7 +213,7 @@ class ArgItemBase(object):
 	#
 
 	def expectInt32(self,
-			displayName,
+			displayName:str,
 			minValue:int = None,
 			maxValue:int = None,
 		):

@@ -37,6 +37,7 @@ class OptionParameter(object):
 		self.strEnumValues = None
 		self.strRegEx = None
 		self.mustExist = None
+		self.mustBeEmpty = None
 		self.baseDir = None
 		self.toAbsolutePath = None
 	#
@@ -50,7 +51,7 @@ class OptionParameter(object):
 	## Helper Methods
 	################################################################################################################################
 
-	def __parseFile(self, sinput):
+	def __parseFile(self, sinput:str) -> str:
 		assert isinstance(sinput, str)
 
 		if self.minLength is not None:
@@ -73,7 +74,7 @@ class OptionParameter(object):
 		return sinput
 	#
 
-	def __parseFileOrDirectory(self, sinput):
+	def __parseFileOrDirectory(self, sinput:str) -> str:
 		assert isinstance(sinput, str)
 
 		if self.minLength is not None:
@@ -96,7 +97,7 @@ class OptionParameter(object):
 		return sinput
 	#
 
-	def __parseDirectory(self, sinput):
+	def __parseDirectory(self, sinput:str) -> str:
 		assert isinstance(sinput, str)
 
 		if self.minLength is not None:
@@ -116,10 +117,14 @@ class OptionParameter(object):
 			if not os.path.isdir(sinput):
 				raise Exception("Directory specified for option " + repr(str(self.option)) + " does not exist: " + repr(sinput))
 
+		if self.mustBeEmpty:
+			if bool(os.listdir(sinput)):
+				raise Exception("Directory specified for option " + repr(str(self.option)) + " is not empty: " + repr(sinput))
+
 		return sinput
 	#
 
-	def __parseString(self, sinput):
+	def __parseString(self, sinput:str) -> str:
 		assert isinstance(sinput, str)
 
 		if self.strEnumValues is not None:
@@ -145,7 +150,7 @@ class OptionParameter(object):
 		return sinput
 	#
 
-	def __parseInt32(self, sinput):
+	def __parseInt32(self, sinput:str) -> int:
 		try:
 			n = int(sinput)
 		except:
@@ -167,7 +172,7 @@ class OptionParameter(object):
 	#
 	# This is the old version of the parsing method. This should be replaced by a new implementation, but right now this old version is still in use.
 	#
-	def parse(self, sinput):
+	def parse(self, sinput:str):
 		assert isinstance(sinput, str)
 
 		if self.type == EnumParameterType.String:
