@@ -2,12 +2,11 @@
 
 
 
-
+import typing
 import re
 import os
 
 from .EnumParameterType import EnumParameterType
-
 
 
 
@@ -29,17 +28,22 @@ class OptionParameter(object):
 
 		self.displayName = displayName
 		self.option = option
+
+		# TODO: modularize this
+
 		self.type = ptype
-		self.minLength = None
-		self.maxLength = None
+		self.strMinLength:int = None
+		self.strMaxLength:int = None
 		self.minValue = None
 		self.maxValue = None
 		self.strEnumValues = None
-		self.strRegEx = None
+		self.strRegEx:str = None
 		self.mustExist = None
 		self.mustBeEmpty = None
 		self.baseDir = None
 		self.toAbsolutePath = None
+		self.listMinLength:int = None
+		self.listMaxLength:int = None
 	#
 
 
@@ -54,12 +58,12 @@ class OptionParameter(object):
 	def __parseFile(self, sinput:str) -> str:
 		assert isinstance(sinput, str)
 
-		if self.minLength is not None:
-			if len(sinput) < self.minLength:
+		if self.strMinLength is not None:
+			if len(sinput) < self.strMinLength:
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-		if self.maxLength is not None:
-			if len(sinput) < self.maxLength:
+		if self.strMaxLength is not None:
+			if len(sinput) < self.strMaxLength:
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 		if self.toAbsolutePath:
@@ -77,12 +81,12 @@ class OptionParameter(object):
 	def __parseFileOrDirectory(self, sinput:str) -> str:
 		assert isinstance(sinput, str)
 
-		if self.minLength is not None:
-			if len(sinput) < self.minLength:
+		if self.strMinLength is not None:
+			if len(sinput) < self.strMinLength:
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-		if self.maxLength is not None:
-			if len(sinput) < self.maxLength:
+		if self.strMaxLength is not None:
+			if len(sinput) < self.strMaxLength:
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 		if self.toAbsolutePath:
@@ -100,12 +104,12 @@ class OptionParameter(object):
 	def __parseDirectory(self, sinput:str) -> str:
 		assert isinstance(sinput, str)
 
-		if self.minLength is not None:
-			if len(sinput) < self.minLength:
+		if self.strMinLength is not None:
+			if len(sinput) < self.strMinLength:
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-		if self.maxLength is not None:
-			if len(sinput) < self.maxLength:
+		if self.strMaxLength is not None:
+			if len(sinput) < self.strMaxLength:
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 		if self.toAbsolutePath:
@@ -133,12 +137,12 @@ class OptionParameter(object):
 					return sinput
 			raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-		if self.minLength is not None:
-			if len(sinput) < self.minLength:
+		if self.strMinLength is not None:
+			if len(sinput) < self.strMinLength:
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
-		if self.maxLength is not None:
-			if len(sinput) < self.maxLength:
+		if self.strMaxLength is not None:
+			if len(sinput) < self.strMaxLength:
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 		if self.strRegEx is not None:
@@ -148,6 +152,27 @@ class OptionParameter(object):
 				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
 
 		return sinput
+	#
+
+	def __parseStringListCommaSeparated(self, sinput:str) -> typing.List[str]:
+		assert isinstance(sinput, str)
+
+		ret:typing.List[str] = []
+		for e in sinput.split(","):
+			e = e.strip()
+			if e:
+				e = self.__parseString(e)
+				ret.append(e)
+
+		if self.listMinLength is not None:
+			if len(ret) < self.listMinLength:
+				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+
+		if self.listMaxLength is not None:
+			if len(ret) > self.listMaxLength:
+				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+
+		return ret
 	#
 
 	def __parseInt32(self, sinput:str) -> int:
@@ -170,9 +195,12 @@ class OptionParameter(object):
 	################################################################################################################################
 
 	#
+	# Parse and verify the specified argument string.
 	# This is the old version of the parsing method. This should be replaced by a new implementation, but right now this old version is still in use.
 	#
-	def parse(self, sinput:str):
+	# @return		Returns the parsed value. This can be anything the value parser returned.
+	#
+	def parse(self, sinput:str) -> typing.Union[int,str,typing.List[str]]:
 		assert isinstance(sinput, str)
 
 		if self.type == EnumParameterType.String:
@@ -185,8 +213,10 @@ class OptionParameter(object):
 			return self.__parseDirectory(sinput)
 		elif self.type == EnumParameterType.FileOrDirectory:
 			return self.__parseFileOrDirectory(sinput)
-		elif self.type == EnumParameterType.StringList:
-			raise NotImplementedError()
+		elif self.type == EnumParameterType.ArgsList:
+			raise Exception("Not supported!")
+		elif self.type == EnumParameterType.StringListCommaSeparated:
+			return self.__parseStringListCommaSeparated(sinput)
 		else:
 			raise Exception("Implementation error!")
 	#
@@ -220,13 +250,15 @@ class OptionParameter(object):
 		elif self.type == EnumParameterType.FileOrDirectory:
 			sinput = parameters[pos]
 			return self.__parseFileOrDirectory(sinput), 1
-		elif self.type == EnumParameterType.StringList:
+		elif self.type == EnumParameterType.ArgsList:
 			ret = []
 			n = 0
 			for sinput in parameters[pos:]:
 				ret.append(self.__parseString(sinput))
 				n += 1
 			return ret, n
+		elif self.type == EnumParameterType.StringListCommaSeparated:
+			raise Exception("Not yet implemented!")
 		else:
 			raise Exception("Implementation error!")
 	#

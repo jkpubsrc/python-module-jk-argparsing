@@ -55,7 +55,7 @@ class ArgCommand(ArgItemBase):
 		return self.__name
 	#
 
-	def expectStringList(self,
+	def expectStringArgList(self,
 			displayName:str,
 			minLength:int = None,
 			maxLength:int = None,
@@ -96,9 +96,9 @@ class ArgCommand(ArgItemBase):
 		#if self._isShortOption:
 		#	raise Exception("Short options cannot have arguments!")
 
-		p = OptionParameter(displayName, self, EnumParameterType.StringList)
-		p.minLength = minLength
-		p.maxLength = maxLength
+		p = OptionParameter(displayName, self, EnumParameterType.ArgsList)
+		p.strMinLength = minLength
+		p.strMaxLength = maxLength
 		p.strEnumValues = strEnumValues
 		p.strRegEx = strRegEx
 		self._optionParameters.append(p)

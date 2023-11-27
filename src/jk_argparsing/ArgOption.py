@@ -3,9 +3,14 @@
 
 
 from .ArgItemBase import *
+from .ParsedArgs import ParsedArgs
 
 
 
+
+ArgOption = typing.NewType("ArgOption", ArgItemBase)
+#ParsedArgs = typing.NewType("ParsedArgs", object)
+ON_OPTION_CALLBACK = typing.Union[typing.Callable[[ArgOption,list,ParsedArgs],None],None]
 
 class ArgOption(ArgItemBase):
 
@@ -13,7 +18,7 @@ class ArgOption(ArgItemBase):
 	## Constructors
 	################################################################################################################################
 
-	def __init__(self, shortName:typing.Union[str,None], longName:typing.Union[str,None], description:str):
+	def __init__(self, shortName:typing.Union[str,None], longName:typing.Union[str,None], description:str, bIsProvidedByCommand:bool):
 		super().__init__()
 
 		if shortName is not None:
@@ -27,9 +32,12 @@ class ArgOption(ArgItemBase):
 		self.__longName = longName
 		self.__description = description
 		self.__requiredErrorMessage = None
-		self.__onOption = None
+		self.__onOption:ON_OPTION_CALLBACK = None
 
 		self._isShortOption = self.isShortOption
+
+		self.__bIsProvidedByCommand = bIsProvidedByCommand
+		self.__providedByCommands:typing.List[str] = []
 	#
 
 	################################################################################################################################
@@ -52,6 +60,21 @@ class ArgOption(ArgItemBase):
 	#
 
 	@property
+	def isProvidedByCommand(self) -> bool:
+		return self.__bIsProvidedByCommand
+	#
+
+	#
+	# Provides a list of commands that make use of this option.
+	# This feature is used if commands can make use of certain options.
+	# An empty list is returned if this is a general option.
+	#
+	@property
+	def providedByCommands(self) -> typing.List[str]:
+		return self.__providedByCommands
+	#
+
+	@property
 	def isRequired(self) -> bool:
 		return self.__requiredErrorMessage is not None
 	#
@@ -62,12 +85,12 @@ class ArgOption(ArgItemBase):
 	#
 
 	@property
-	def onOption(self):
+	def onOption(self) -> ON_OPTION_CALLBACK:
 		return self.__onOption
 	#
 
 	@onOption.setter
-	def onOption(self, value):
+	def onOption(self, value:ON_OPTION_CALLBACK):
 		self.__onOption = value
 	#
 
@@ -75,7 +98,7 @@ class ArgOption(ArgItemBase):
 	## Helper Methods
 	################################################################################################################################
 
-	def _invokeOpt(self, optArgs, parsedArgs):
+	def _invokeOpt(self, optArgs:list, parsedArgs:ParsedArgs):
 		if self.__onOption is not None:
 			self.__onOption(self, optArgs, parsedArgs)
 	#

@@ -5,8 +5,6 @@ import os
 import sys
 import typing
 
-import jk_terminal_essentials
-
 from .ArgOption import ArgOption
 from .ParsedArgs import ParsedArgs
 from .ArgsOptionDataDict import ArgsOptionDataDict
@@ -18,6 +16,9 @@ from .textprimitives import *
 from .textmodel import *
 from .BashCompletionLocal import BashCompletionLocal
 from .impl.ImplementationErrorException import ImplementationErrorException
+from .impl.HelpTextData import HelpTextData
+from .impl.HelpTextBuilder import HelpTextBuilder
+
 
 
 
@@ -196,19 +197,10 @@ class ArgsParser(object):
 		self.__longArgs:typing.Dict[str,ArgOption] = {}
 		self.__shortArgs:typing.Dict[str,ArgOption] = {}
 		self.__options:typing.List[ArgOption] = []
-		self.__authorsList:typing.List[typing.Tuple[str,str,str]] = []		# stores tuples of `(author-name, author-email, author-description)`
-		self.__synopsisList:typing.List[str] = []							# stores strings that hold the synopsis
-		self.__returnCodesList:typing.List[typing.Tuple[str,str]] = []		# stores tuples of `(return-code, description)`
-		self.__appName:str = appName
-		self.__shortAppDescription:str = shortAppDescription
 		self.__optionDataDefaults = ArgsOptionDataDict()
-		self.__licenseTextLines:typing.Union[typing.List[str],None] = None
-		self.__descriptionChapters = []		# stores TSection objects
-		self.__extraHeadChapters = []		# stores TSection objects
-		self.__extraMiddleChapters = []		# stores TSection objects
-		self.__extraEndChapters = []		# stores TSection objects
 
 		self.__visSettings = VisSettings()
+		self.__helpTextData = HelpTextData(appName, shortAppDescription)
 	#
 
 	################################################################################################################################
@@ -227,12 +219,12 @@ class ArgsParser(object):
 
 	@property
 	def appName(self) -> str:
-		return self.__appName
+		return self.__helpTextData.appName
 	#
 
 	@property
 	def shortAppDescription(self) -> str:
-		return self.__shortAppDescription
+		return self.__helpTextData.shortAppDescription
 	#
 
 	@property
@@ -254,14 +246,6 @@ class ArgsParser(object):
 	################################################################################################################################
 	## Helper Methods
 	################################################################################################################################
-
-	def __windowWidth(self) -> int:
-		try:
-			sz = os.get_terminal_size()
-			return min(sz.columns - 1, 140)
-		except:
-			return 160
-	#
 
 	def __eatLongOption(self, optionName:str, args:list, argsPos:int, ret:ParsedArgs):
 		assert isinstance(optionName, str)
@@ -328,393 +312,6 @@ class ArgsParser(object):
 	#
 	"""
 
-	def __convertTSection(self, v:VisSettings, chapter:TSection) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-		assert isinstance(chapter, TSection)
-
-		# ----
-
-		sec = TextBlockSequence(0, 0)
-
-		sec.addBlock(TextBlock(v.title2_indent, chapter.title, v.title2_fgColor))
-		sec.addBlock(TextEmpty(v.title2_paddingAfterTitle))
-
-		for block in chapter.contentBlocks:
-			sec.addBlock(TextBlock(v.section2_indent, block.text))
-			sec.addBlock(TextEmpty(v.section2_gapBetweenSections))
-
-		return sec
-	#
-
-	def __appendTitle1WithGap(self, v:VisSettings, title:str, ret:TextBlockSequence):
-		assert isinstance(v, VisSettings)
-		assert isinstance(title, str)
-		assert isinstance(ret, TextBlockSequence)
-
-		# ----
-
-		ret.addBlock(TextBlock(v.title1_indent, v.title1_preprocessor(title) if v.title1_preprocessor else title, v.title1_fgColor))
-		ret.addBlock(TextEmpty(v.title1_paddingAfterTitle))
-	#
-
-	def _txtCreateName(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		return TextBlock(0, self.__appName + " - " + self.__shortAppDescription, v.appName_fgColor)
-	#
-
-	def _txtCreateSynopsis(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		if not self.__synopsisList:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		# title
-		self.__appendTitle1WithGap(v, "Synopsis", ret)
-
-		# content
-		for synopsisText in self.__synopsisList:
-			ret.addBlock(TextBlock(v.section1_indent, synopsisText, None))
-
-		return ret
-	#
-
-	def _txtCreateOptions(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		if not self.__options:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		# title
-		self.__appendTitle1WithGap(v, "Options", ret)
-
-		# content
-		grid = TextGridBlock(v.section1_indent, v.options_tableRowGap, v.options_tableColumnsGap, columnLayouterL2R)
-		ret.addBlock(grid)
-		for o in self.__options:
-			if o.shortName is not None:
-				sShortName = "-" + o.shortName
-				for op in o.optionParameters:
-					sShortName += " " + op.displayName
-			else:
-				sShortName = ""
-
-			if o.longName is not None:
-				sLongName = "--" + o.longName
-				for op in o.optionParameters:
-					sLongName += " " + op.displayName
-			else:
-				sLongName = ""
-
-			grid.addRow([
-				TextBlock(0, sShortName, v.options_fgColor),
-				TextBlock(0, sLongName, v.options_fgColor),
-				TextBlock(0, o.description),
-			])
-
-		return ret
-	#
-
-	def _txtCreateAuthors(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		if not self.__authorsList:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		# title
-		self.__appendTitle1WithGap(v, "Authors", ret)
-
-		# content
-		for (name, email, description) in self.__authorsList:
-			s = name
-			if email:
-				s += " <" + email + ">"
-			if description:
-				s += " - " + description
-			ret.addBlock(TextBlock(v.section1_indent, s))
-
-		return ret
-	#
-
-	def _txtReturnCodes(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		if not self.__returnCodesList:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		# title
-		self.__appendTitle1WithGap(v, "Program Exit Codes", ret)
-
-		# content
-		grid = TextGridBlock(v.section1_indent, v.exitCodes_tableRowGap, v.exitCodes_tableColumnsGap, columnLayouterL2R)
-		ret.addBlock(grid)
-		for (retCode, retCodeDescription) in self.__returnCodesList:
-			grid.addRow([
-				TextBlock(0, str(retCode), v.exitCodes_fgColor),
-				TextBlock(0, retCodeDescription),
-			])
-
-		return ret
-	#
-
-	def _txtCreateCommands(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		if not self.__commands:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		# title
-		self.__appendTitle1WithGap(v, self.titleCommandsStd, ret)
-
-		# content
-		grid = TextGridBlock(v.section1_indent, v.commands_tableRowGap, v.commands_tableColumnsGap, columnLayouterL2R)
-		ret.addBlock(grid)
-		keys = list(self.__commands.keys())
-		keys.sort()
-		for key in keys:
-			cmd = self.__commands[key]
-
-			if cmd.isHidden:
-				continue
-
-			s = cmd.name
-			for op in cmd.optionParameters:
-				s += " " + op.displayName
-
-			grid.addRow([
-				TextBlock(0, s, v.commands_fgColor),
-				TextBlock(0, cmd.description),
-			])
-
-		return ret
-	#
-
-	def _txtCreateExtraCommands(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		if not self.__commandsExtra:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		# title
-		self.__appendTitle1WithGap(v, self.titleCommandsExtra, ret)
-
-		# content
-		grid = TextGridBlock(v.section1_indent, v.commands_tableRowGap, v.commands_tableColumnsGap, columnLayouterL2R)
-		ret.addBlock(grid)
-		keys = list(self.__commandsExtra.keys())
-		keys.sort()
-		for key in keys:
-			cmd = self.__commandsExtra[key]
-			s = cmd.name
-			for op in cmd.optionParameters:
-				s += " " + op.displayName
-			grid.addRow([
-				TextBlock(0, s, v.commands_fgColor),
-				TextBlock(0, cmd.description),
-			])
-
-		return ret
-	#
-
-	def _txtCreateLicense(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		if not self.__licenseTextLines:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		# title
-		self.__appendTitle1WithGap(v, "License", ret)
-
-		# content
-		for line in self.__licenseTextLines:
-			ret.addBlock(TextBlock(v.section1_indent, line))
-			ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
-
-		return ret
-	#
-
-	def _txtCreateDescription(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		if not self.__descriptionChapters:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		# title
-		self.__appendTitle1WithGap(v, "Description", ret)
-
-		# content
-		for chapter in self.__descriptionChapters:
-			if isinstance(chapter, TBlock):
-				ret.addBlock(TextBlock(v.section1_indent, chapter.text))
-				ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
-			elif isinstance(chapter, TSection):
-				ret.addBlock(self.__convertTSection(v, chapter))
-			else:
-				raise ImplementationErrorException()
-
-		return ret
-	#
-
-	def _txtCreateExtraHead(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
-
-		if not self.__extraHeadChapters:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		for n, chapter in enumerate(self.__extraHeadChapters):
-			assert isinstance(chapter, TSection)
-
-			if n > 0:
-				ret.addBlock(TextEmpty(v.section1_gapBetweenSections))
-
-			# title
-			self.__appendTitle1WithGap(v, chapter.title, ret)
-
-			# content
-			bNeedGap = False
-			for sub in chapter.contentBlocks:
-				if bNeedGap:
-					ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
-					bNeedGap = False
-				if isinstance(sub, TSection):
-					ret.addBlock(self.__convertTSection(v, sub))
-				elif isinstance(sub, TBlock):
-					ret.addBlock(TextBlock(v.section1_indent, sub.text))
-					bNeedGap = True
-				elif isinstance(sub, TList):
-					for item in sub.items:
-						ret.addBlock(TextBlock(v.section1_indent, item, listIndent=v.listIndent, listChar=v.listChar))
-					bNeedGap = True
-				else:
-					raise ImplementationErrorException()
-
-		return ret
-	#
-
-	def _txtCreateExtraMiddle(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
-
-		if not self.__extraMiddleChapters:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		for n, chapter in enumerate(self.__extraMiddleChapters):
-			assert isinstance(chapter, TSection)
-
-			if n > 0:
-				ret.addBlock(TextEmpty(v.section1_gapBetweenSections))
-
-			# title
-			self.__appendTitle1WithGap(v, chapter.title, ret)
-
-			# content
-			bNeedGap = False
-			for sub in chapter.contentBlocks:
-				if bNeedGap:
-					ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
-					bNeedGap = False
-				if isinstance(sub, TSection):
-					ret.addBlock(self.__convertTSection(v, sub))
-				elif isinstance(sub, TBlock):
-					ret.addBlock(TextBlock(v.section1_indent, sub.text))
-					bNeedGap = True
-				elif isinstance(sub, TList):
-					for item in sub.items:
-						ret.addBlock(TextBlock(v.section1_indent, item, listIndent=v.listIndent, listChar=v.listChar))
-					bNeedGap = True
-				else:
-					raise ImplementationErrorException()
-
-		return ret
-	#
-
-	def _txtCreateExtraEnd(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
-
-		# ----
-
-		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
-
-		if not self.__extraEndChapters:
-			return None
-
-		ret = TextBlockSequence(0, 0)
-
-		for n, chapter in enumerate(self.__extraEndChapters):
-			assert isinstance(chapter, TSection)
-
-			if n > 0:
-				ret.addBlock(TextEmpty(v.section1_gapBetweenSections))
-
-			# title
-			self.__appendTitle1WithGap(v, chapter.title, ret)
-
-			# content
-			bNeedGap = False
-			for sub in chapter.contentBlocks:
-				if bNeedGap:
-					ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
-					bNeedGap = False
-				if isinstance(sub, TSection):
-					ret.addBlock(self.__convertTSection(v, sub))
-				elif isinstance(sub, TBlock):
-					ret.addBlock(TextBlock(v.section1_indent, sub.text))
-					bNeedGap = True
-				elif isinstance(sub, TList):
-					for item in sub.items:
-						ret.addBlock(TextBlock(v.section1_indent, item, listIndent=v.listIndent, listChar=v.listChar))
-					bNeedGap = True
-				else:
-					raise ImplementationErrorException()
-
-		return ret
-	#
-
 	################################################################################################################################
 	## Public Methods
 	################################################################################################################################
@@ -737,7 +334,7 @@ class ArgsParser(object):
 		# ----
 
 		o = ArgCommand(name, description, bHidden)
-		if (o.name in self.__commands) or o.name in self.__commandsExtra:
+		if (o.name in self.__commands) or (o.name in self.__commandsExtra):
 			raise Exception("A command named '" + o.name + "' already exists!")
 		self.__commands[o.name] = o
 
@@ -753,7 +350,7 @@ class ArgsParser(object):
 		# ----
 
 		o = ArgCommand(name, description)
-		if (o.name in self.__commands) or o.name in self.__commandsExtra:
+		if (o.name in self.__commands) or (o.name in self.__commandsExtra):
 			raise Exception("A command named '" + o.name + "' already exists!")
 		self.__commandsExtra[o.name] = o
 
@@ -777,7 +374,7 @@ class ArgsParser(object):
 
 		# ----
 
-		o = ArgOption(shortName, longName, description)
+		o = ArgOption(shortName, longName, description, False)
 
 		if shortName is not None:
 			if o.shortName in self.__shortArgs:
@@ -790,6 +387,78 @@ class ArgsParser(object):
 			self.__longArgs[o.longName] = o
 
 		self.__options.append(o)
+
+		return o
+	#
+
+	def createCommandOption(self, cmd:typing.Union[ArgCommand,str,None], shortName:typing.Union[str,None], longName:str, description:str = None) -> ArgOption:
+		if cmd is not None:
+			assert isinstance(cmd, (ArgCommand,str))
+			if isinstance(cmd, ArgCommand):
+				cmd = cmd.name
+			assert cmd
+
+		if shortName is not None:
+			assert isinstance(shortName, str)
+			assert len(shortName) == 1
+
+		if longName is not None:
+			assert isinstance(longName, str)
+			assert longName
+
+		if (shortName is None) and (longName is None):
+			raise Exception("Arguments need at least a long or a short name!")
+
+		if description is not None:
+			assert isinstance(description, str)
+			assert description
+
+		# ----
+
+		# find a possibly existing option object
+
+		oShort = self.__shortArgs.get(shortName) if shortName is not None else None
+		oLong = self.__longArgs.get(longName) if longName is not None else None
+
+		if oShort is None:
+			if oLong is None:
+				# oShort == None, oLong == None
+
+				if description is None:
+					raise Exception("Arguments that have not been predefined need to have a description!")
+				
+				# create new and register it
+				o = ArgOption(shortName, longName, description, True)
+				if shortName is not None:
+					self.__shortArgs[o.shortName] = o
+				if longName is not None:
+					self.__shortArgs[o.longName] = o
+				self.__options.append(o)
+
+			else:
+				# oShort == None, oLong != None
+
+				if not oLong.isProvidedByCommand:
+					raise Exception("A global option is already defined matching '--" + longName + "'")
+				o = oLong
+
+		else:
+			if oLong is None:
+				# oShort != None, oLong == None
+
+				if not oShort.isProvidedByCommand:
+					raise Exception("A global option is already defined matching '-" + shortName + "'")
+				o = oShort
+			else:
+				# oShort != None, oLong != None
+
+				# we can't arrive here
+				raise ImplementationErrorException()
+
+		# ----
+
+		if cmd:
+			o.providedByCommands.append(cmd)
 
 		return o
 	#
@@ -843,7 +512,7 @@ class ArgsParser(object):
 			assert isinstance(email, str)
 			assert email
 
-		self.__authorsList.append((name, email, description))
+		self.__helpTextData.authorsList.append((name, email, description))
 
 		return self
 	#
@@ -855,7 +524,7 @@ class ArgsParser(object):
 		assert isinstance(synopsis, str)
 		assert synopsis
 
-		self.__synopsisList.append(synopsis)
+		self.__helpTextData.synopsisList.append(synopsis)
 
 		return self
 	#
@@ -870,7 +539,7 @@ class ArgsParser(object):
 		assert isinstance(returnCode, int)
 		assert isinstance(description, str)
 
-		self.__returnCodesList.append((returnCode, description))
+		self.__helpTextData.returnCodesList.append((returnCode, description))
 
 		return self
 	#
@@ -879,8 +548,8 @@ class ArgsParser(object):
 		assert isinstance(licenseID, str)
 
 		availableLicenseList = AvailableLicenseList()
-		self.__licenseTextLines = availableLicenseList.getText(licenseID, **kwargs)
-		if self.__licenseTextLines is None:
+		self.__helpTextData.licenseTextLines = availableLicenseList.getText(licenseID, **kwargs)
+		if self.__helpTextData.licenseTextLines is None:
 			raise Exception("No such license: " + licenseID)
 
 		return self
@@ -889,7 +558,7 @@ class ArgsParser(object):
 	def addDescriptionChapter(self, chapterName:typing.Union[str,None], paragraphs:typing.Sequence = None) -> TSection:
 		if chapterName is None:
 			for p in paragraphs:
-				self.__descriptionChapters.append(TBlock(p))
+				self.__helpTextData.descriptionChapters.append(TBlock(p))
 			sec = None
 
 		else:
@@ -898,61 +567,39 @@ class ArgsParser(object):
 				sec = TSection(chapterName, [ paragraphs ])
 			else:
 				sec = TSection(chapterName, paragraphs)
-			self.__descriptionChapters.append(sec)
+			self.__helpTextData.descriptionChapters.append(sec)
 
 		return sec
 	#
 
 	def addExtraChapterHead(self, section:TSection):
 		assert isinstance(section, TSection)
-		self.__extraHeadChapters.append(section)
+		self.__helpTextData.extraHeadChapters.append(section)
 		return self
 	#
 
 	def addExtraChapterMiddle(self, section:TSection):
 		assert isinstance(section, TSection)
-		self.__extraMiddleChapters.append(section)
+		self.__helpTextData.extraMiddleChapters.append(section)
 		return self
 	#
 
 	def addExtraChapterEnd(self, section:TSection):
 		assert isinstance(section, TSection)
-		self.__extraEndChapters.append(section)
+		self.__helpTextData.extraEndChapters.append(section)
 		return self
 	#
 
 	def buildHelpText(self, bColor:bool = None) -> typing.List[str]:
-		if bColor is None:
-			bColor = jk_terminal_essentials.checkTerminalSupportsColors()
+		helpTextBuilder = HelpTextBuilder(
+			self.__options,
+			self.__commands,
+			self.__commandsExtra,
+			self.__visSettings,
+			self.__helpTextData,
+		)
 
-		v = self.__visSettings
-		doc = TextBlockSequence(0, v.section1_gapBetweenSections)
-
-		# ----
-
-		for provider in [
-				self._txtCreateName,
-				self._txtCreateSynopsis,
-				self._txtCreateExtraHead,
-				self._txtCreateDescription,
-				self._txtCreateExtraMiddle,
-				self._txtCreateOptions,
-				self._txtCreateCommands,
-				self._txtCreateExtraCommands,
-				self._txtCreateExtraEnd,
-				self._txtReturnCodes,
-				self._txtCreateAuthors,
-				self._txtCreateLicense,
-			]:
-
-			x = provider(v)
-			if x:
-				doc.addBlock(x)
-
-		# ----
-
-		doc.layout(self.__windowWidth())
-		return [ str(x) for x in doc.getLines(bColor) ]
+		return helpTextBuilder.buildHelpText(bColor)
 	#
 
 	def parse(self, args:typing.Iterable[str] = None) -> ParsedArgs:

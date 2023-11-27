@@ -24,7 +24,7 @@ class ArgItemBase(object):
 	################################################################################################################################
 
 	def __init__(self):
-		self._optionParameters = []							# receives instances of OptionParameter that indicate what kind of arguments are expected
+		self._optionParameters:typing.List[OptionParameter] = []		# receives instances of OptionParameter that indicate what kind of arguments are expected
 		self._isShortOption = False
 		self._canHaveNoMoreExpectations = False				# set this to True in order to prevent any more calls to an expect...-method
 	#
@@ -34,7 +34,7 @@ class ArgItemBase(object):
 	################################################################################################################################
 
 	@property
-	def optionParameters(self) -> list:
+	def optionParameters(self) -> typing.List[OptionParameter]:
 		return self._optionParameters
 	#
 
@@ -73,8 +73,8 @@ class ArgItemBase(object):
 		#	raise Exception("Short options cannot have arguments!")
 
 		p = OptionParameter(displayName, self, EnumParameterType.FileOrDirectory)
-		p.minLength = minLength
-		p.maxLength = maxLength
+		p.strMinLength = minLength
+		p.strMaxLength = maxLength
 		p.mustExist = mustExist
 		p.toAbsolutePath = toAbsolutePath
 		p.baseDir = baseDir
@@ -112,8 +112,8 @@ class ArgItemBase(object):
 		#	raise Exception("Short options cannot have arguments!")
 
 		p = OptionParameter(displayName, self, EnumParameterType.File)
-		p.minLength = minLength
-		p.maxLength = maxLength
+		p.strMinLength = minLength
+		p.strMaxLength = maxLength
 		p.mustExist = mustExist
 		p.toAbsolutePath = toAbsolutePath
 		p.baseDir = baseDir
@@ -152,8 +152,8 @@ class ArgItemBase(object):
 		#	raise Exception("Short options cannot have arguments!")
 
 		p = OptionParameter(displayName, self, EnumParameterType.Directory)
-		p.minLength = minLength
-		p.maxLength = maxLength
+		p.strMinLength = minLength
+		p.strMaxLength = maxLength
 		p.mustExist = mustExist
 		p.mustBeEmpty = mustBeEmpty
 		p.toAbsolutePath = toAbsolutePath
@@ -203,10 +203,63 @@ class ArgItemBase(object):
 		#	raise Exception("Short options cannot have arguments!")
 
 		p = OptionParameter(displayName, self, EnumParameterType.String)
-		p.minLength = minLength
-		p.maxLength = maxLength
+		p.strMinLength = minLength
+		p.strMaxLength = maxLength
 		p.strEnumValues = enumValues
 		p.strRegEx = regex
+		self._optionParameters.append(p)
+
+		return self
+	#
+
+	def expectCommaSeparatedStringList(self,
+			displayName:str,
+			listMinLength:int = None,
+			listMaxLength:int = None,
+			strMinLength:int = None,
+			strMaxLength:int = None,
+			strEnumValues:typing.Union[typing.List[str],typing.Tuple[str]] = None,
+			strRegEx:str = None,
+		):
+
+		if self._canHaveNoMoreExpectations:
+			raise Exception("After a list argument no other arguments can be used!")
+
+		assert isinstance(displayName, str)
+
+		if strEnumValues is not None:
+			assert isinstance(strEnumValues, (tuple,list))
+			assert len(strEnumValues) > 0
+			for v in strEnumValues:
+				assert isinstance(v, str)
+
+			strMinLength = None
+			strMaxLength = None
+			strRegEx = None
+		else:
+			if strMinLength is not None:
+				assert isinstance(strMinLength, int)
+			else:
+				strMinLength = 1
+			if strMaxLength is not None:
+				assert isinstance(strMaxLength, int)
+			if strRegEx is not None:
+				assert isinstance(strRegEx, str)
+				if not strRegEx.startswith("^"):
+					strRegEx = "^" + strRegEx
+				if not strRegEx.endswith("$"):
+					strRegEx = strRegEx + "$"
+
+		#if self._isShortOption:
+		#	raise Exception("Short options cannot have arguments!")
+
+		p = OptionParameter(displayName, self, EnumParameterType.StringListCommaSeparated)
+		p.listMinLength = listMinLength
+		p.listMaxLength = listMaxLength
+		p.strMinLength = strMinLength
+		p.strMaxLength = strMaxLength
+		p.strEnumValues = strEnumValues
+		p.strRegEx = strRegEx
 		self._optionParameters.append(p)
 
 		return self

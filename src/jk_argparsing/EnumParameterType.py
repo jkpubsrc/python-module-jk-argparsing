@@ -13,7 +13,8 @@ class EnumParameterType(Enum):
 	File = 3
 	Directory = 4
 	FileOrDirectory = 5
-	StringList = 6
+	ArgsList = 6
+	StringListCommaSeparated = 7				# comma separated string list
 
 #
 

@@ -10,6 +10,8 @@ from .TList import TList
 
 
 
+TSection = typing.NewType("TSection", object)
+
 class TSection(object):
 
 	################################################################################################################################
@@ -43,7 +45,7 @@ class TSection(object):
 	#
 
 	@property
-	def contentBlocks(self) -> list:				# -> typing.List[typing.Union[str,TBlock,TList,TSection]]
+	def contentBlocks(self) -> typing.List[typing.Union[str,TBlock,TList,TSection]]:
 		return list(self.__contentBlocks)
 	#
 

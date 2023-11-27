@@ -48,3 +48,11 @@
 * 2023-06-28
 	* Added: directory option mustBeEmpty
 
+* 2023-07-23:
+	* Added: Missing classes to module
+
+* 2023-11-27:
+	* Renamed: ArgCommand.expectStringList to ArgCommand.expectStringArgList
+	* Added: Comma separated string lists for options
+	* Migrated: Now using pyproject.toml
+

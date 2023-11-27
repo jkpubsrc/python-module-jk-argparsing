@@ -8,3 +8,5 @@ src/*.egg-info/
 TEMP/
 *.bak
 *.old
+dist/
+build/

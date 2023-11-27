@@ -1,0 +1,48 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "jk_argparsing"
+description = "A python module for parsing of program arguments."
+authors = [
+	{ name = "Jürgen Knauth", email = "pubsrc@binary-overflow.de" },
+]
+readme = "README.md"
+dynamic = [ "version" ]
+keywords = [
+	"program",
+	"arguments",
+	"commands",
+	"options",
+	"args",
+]
+dependencies = [
+	"jk-terminal-essentials >= 0.2021.3.25",
+]
+requires-python = ">=3.8"
+classifiers = [
+	"Development Status :: 5 - Production/Stable",
+	"Programming Language :: Python",
+	"Programming Language :: Python :: 3",
+	"Environment :: Console",
+	"License :: OSI Approved :: Apache Software License",
+]
+license = { file = "LICENSE.txt" }
+
+[project.urls]
+Home = "https://github.com/jkpubsrc/python-module-jk-argparsing"
+Homepage = "https://github.com/jkpubsrc/python-module-jk-argparsing"
+
+[tool.flit.sdist]
+exclude = [
+	"src/bin/",
+	"src/setup.cfg",
+	"src/setup.py",
+	"src/build/",
+	"src/dist/",
+	"src/__old/",
+	"src/__old2/",
+	"src/__old3/",
+]
+

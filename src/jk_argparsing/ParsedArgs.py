@@ -6,6 +6,7 @@ import typing
 
 
 from .ArgsOptionDataDict import ArgsOptionDataDict
+from .ArgCommand import ArgCommand
 
 
 
@@ -20,7 +21,7 @@ class ParsedArgs(object):
 	## Constructor
 	################################################################################################################################
 
-	def __init__(self, commands):
+	def __init__(self, commands:typing.Dict[str,ArgCommand]):
 		self.__commands = commands
 		self.__optionData = ArgsOptionDataDict()
 		self.terminate = False
@@ -38,7 +39,7 @@ class ParsedArgs(object):
 	# line options.
 	#
 	@property
-	def optionData(self):
+	def optionData(self) -> ArgsOptionDataDict:
 		return self.__optionData
 	#
 
@@ -100,7 +101,7 @@ class ParsedArgs(object):
 	# @return		str cmdName			The name of the command. <c>None</c> is returned if there is no more data to process.
 	# @return		list parsedArgs		The arguments for this command. <c>None</c> is returned if there is no more data to process.
 	#
-	def parseNextCommand(self) -> tuple:
+	def parseNextCommand(self) -> typing.Tuple[str,list]:
 		if self.__bError:															# NEW IMPL
 			raise Exception("There have been previous parsing errors!")				# NEW IMPL
 
