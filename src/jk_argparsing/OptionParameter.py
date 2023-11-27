@@ -258,7 +258,8 @@ class OptionParameter(object):
 				n += 1
 			return ret, n
 		elif self.type == EnumParameterType.StringListCommaSeparated:
-			raise Exception("Not yet implemented!")
+			sinput = parameters[pos]
+			return self.__parseStringListCommaSeparated(sinput), 1
 		else:
 			raise Exception("Implementation error!")
 	#
