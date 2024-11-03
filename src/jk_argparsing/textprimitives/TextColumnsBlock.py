@@ -106,7 +106,7 @@ class TextColumnsBlock(ITextBlock):
 	#
 	# @return		XLineFragment[]		Returns a list of lines.
 	#
-	def getLines(self, bColor:bool) -> list:
+	def getLines(self, bColor:bool) -> typing.List[XLineFragment]:
 		lines = []
 		xPos = self.__indent
 		for block in self.__columnBlocks:

@@ -36,7 +36,7 @@ class HelpTextData(object):
 
 		self.synopsisList:typing.List[str] = []								# stores strings that hold the synopsis
 		self.authorsList:typing.List[typing.Tuple[str,str,str]] = []		# stores tuples of `(author-name, author-email, author-description)`
-		self.returnCodesList:typing.List[typing.Tuple[str,str]] = []		# stores tuples of `(return-code, description)`
+		self.returnCodesList:typing.List[typing.Tuple[int,str]] = []		# stores tuples of `(return-code, description)`
 		self.licenseTextLines:typing.Union[typing.List[str],None] = None
 
 		self.descriptionChapters:typing.List[TBlock,TSection] = []

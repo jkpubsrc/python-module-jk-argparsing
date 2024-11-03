@@ -23,12 +23,15 @@
 		"license": "Apache2",
 		"name": "jk_argparsing",
 		"packageClass": "python-module",
-		"version": "0.2023.11.27"
+		"version": "0.2024.2.2"
 	},
 	"requirements": {
 		"htmlcssjs_packages": [],
 		"python_packages": [
-			"jk_terminal_essentials"
+			{
+				"import": "jk_terminal_essentials",
+				"version": ">= 0.2024.2.2",
+			}
 		],
 		"python_packages_dev": [],
 		"python_packages_recommended": [],

@@ -15,6 +15,7 @@ class EnumParameterType(Enum):
 	FileOrDirectory = 5
 	ArgsList = 6
 	StringListCommaSeparated = 7				# comma separated string list
+	Bool = 8
 
 #
 

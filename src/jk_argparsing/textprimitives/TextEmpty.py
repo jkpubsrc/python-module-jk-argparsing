@@ -1,5 +1,6 @@
 
 
+import typing
 
 from .XLineFragment import XLineFragment
 from .ITextBlock import ITextBlock
@@ -66,7 +67,7 @@ class TextEmpty(ITextBlock):
 	#
 	# @return		XLineFragment[]		Returns a list of lines.
 	#
-	def getLines(self, bColor:bool) -> list:
+	def getLines(self, bColor:bool) -> typing.List[XLineFragment]:
 		return [ TextEmpty.__EMPTY_LINE ] * self.__nLines
 	#
 

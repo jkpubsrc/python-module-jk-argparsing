@@ -1,5 +1,6 @@
 
 
+import typing
 
 from .XLineFragment import XLineFragment
 from .ITextBlock import ITextBlock
@@ -168,8 +169,12 @@ class TextBlock(ITextBlock):
 	#
 	# @return		XLineFragment[]		Returns a list of lines.
 	#
-	def getLines(self, bColor:bool) -> list:
+	def getLines(self, bColor:bool) -> typing.List[XLineFragment]:
 		return list(self.__generateLines(bColor))
+	#
+
+	def __str__(self):
+		return "TextBlock<({})".format(self.__wordTokens)
 	#
 
 #

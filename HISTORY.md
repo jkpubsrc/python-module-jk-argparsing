@@ -56,3 +56,20 @@
 	* Added: Comma separated string lists for options
 	* Migrated: Now using pyproject.toml
 
+* 2024-01-25:
+	* Refactoring
+	* Improved: Prepared commands and prepared options
+	* Improved: Redundant option registration via commands
+	* Added: Registering options directly at commands
+
+* 2024-02-01:
+	* Refactoring
+	* Improved: Error messages
+	* Added: expectBoolean(..)
+
+* 2024-02-02:
+	* Refactoring
+
+* 2024-02-08:
+	* Added: Support for multiline text at commands and options
+

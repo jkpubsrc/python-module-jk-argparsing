@@ -312,9 +312,55 @@ class ArgsParser(object):
 	#
 	"""
 
+	def _registerCmdOptionCallback(self, cmd:ArgCommand, option:ArgOption):
+		assert isinstance(cmd, ArgCommand)
+		assert isinstance(option, ArgOption)
+
+		bSkip = False
+		cand1 = None
+		if option.shortName is not None:
+			cand1 = self.__shortArgs.get(option.shortName)
+			if cand1:
+				option.ensureIsEquivalentE(cand1)
+				option = cand1
+				bSkip = True
+
+		if option.longName is not None:
+			cand2 = self.__longArgs.get(option.longName)
+			if cand2:
+				option.ensureIsEquivalentE(cand2)
+				option = cand2
+				bSkip = True
+
+		if (cand1 is not None) and (cand2 is not None) and (cand1 != cand2):
+			raise Exception("For --{} already another option is registered: {}".format(option.longName, str(cand2)))
+
+		cmd.supportsOptions.append(option)
+		option.providedByCommands.append(cmd.name)
+
+		if not bSkip:
+			self.registerPreparedOption(option)
+	#
+
 	################################################################################################################################
 	## Public Methods
 	################################################################################################################################
+
+	def getCommand(self, name:str) -> typing.Union[ArgCommand,None]:
+		assert isinstance(name, str)
+
+		# ----
+
+		ret = self.__commands.get(name)
+		if ret:
+			return ret
+
+		ret = self.__commandsExtra.get(name)
+		if ret:
+			return ret
+
+		return None
+	#
 
 	def hasCommand(self, name:str) -> bool:
 		assert isinstance(name, str)
@@ -325,6 +371,12 @@ class ArgsParser(object):
 	#
 
 	def createCommand(self, name:str, description:str, bHidden:bool = False) -> ArgCommand:
+		cmd = self.prepareCommand(name, description, bHidden)
+		self.registerPreparedCommand(cmd)
+		return cmd
+	#
+
+	def prepareCommand(self, name:str, description:str, bHidden:bool = False) -> ArgCommand:
 		assert isinstance(name, str)
 		assert name
 		assert isinstance(description, str)
@@ -333,12 +385,18 @@ class ArgsParser(object):
 
 		# ----
 
-		o = ArgCommand(name, description, bHidden)
-		if (o.name in self.__commands) or (o.name in self.__commandsExtra):
-			raise Exception("A command named '" + o.name + "' already exists!")
-		self.__commands[o.name] = o
-
+		o = ArgCommand(self, name, description, bHidden)
 		return o
+	#
+
+	def registerPreparedCommand(self, cmd:ArgCommand) -> None:
+		assert isinstance(cmd, ArgCommand)
+
+		# ----
+
+		if (cmd.name in self.__commands) or (cmd.name in self.__commandsExtra):
+			raise Exception("A command named '" + cmd.name + "' already exists!")
+		self.__commands[cmd.name] = cmd
 	#
 
 	def createExtraCommand(self, name:str, description:str) -> ArgCommand:
@@ -357,7 +415,43 @@ class ArgsParser(object):
 		return o
 	#
 
+	################################################################################################################################
+
+	def getOption(self, name:str) -> typing.Union[ArgOption,None]:
+		assert isinstance(name, str)
+
+		# ----
+
+		for opt in self.__options:
+			if name == opt.shortName:
+				return opt
+			if name == opt.longName:
+				return opt
+
+		return None
+	#
+
+	def hasOption(self, name:str) -> bool:
+		assert isinstance(name, str)
+
+		# ----
+
+		for opt in self.__options:
+			if name == opt.shortName:
+				return True
+			if name == opt.longName:
+				return True
+
+		return False
+	#
+
 	def createOption(self, shortName:typing.Union[str,None], longName:str, description:str) -> ArgOption:
+		o = self.prepareOption(shortName, longName, description)
+		self.registerPreparedOption(o)
+		return o
+	#
+
+	def prepareOption(self, shortName:typing.Union[str,None], longName:str, description:str) -> ArgOption:
 		if shortName is not None:
 			assert isinstance(shortName, str)
 			assert len(shortName) == 1
@@ -374,94 +468,98 @@ class ArgsParser(object):
 
 		# ----
 
-		o = ArgOption(shortName, longName, description, False)
+		return ArgOption(shortName, longName, description)
+	#
 
-		if shortName is not None:
+	def registerPreparedOption(self, o:ArgOption) -> None:
+		assert isinstance(o, ArgOption)
+
+		# ----
+
+		if o.shortName is not None:
 			if o.shortName in self.__shortArgs:
 				raise Exception("Duplicate short argument: '-" + o.shortName + "'")
 			self.__shortArgs[o.shortName] = o
 
-		if longName is not None:
+		if o.longName is not None:
 			if o.longName in self.__longArgs:
 				raise Exception("Duplicate long argument: '--" + o.longName + "'")
 			self.__longArgs[o.longName] = o
 
 		self.__options.append(o)
-
-		return o
 	#
 
-	def createCommandOption(self, cmd:typing.Union[ArgCommand,str,None], shortName:typing.Union[str,None], longName:str, description:str = None) -> ArgOption:
-		if cmd is not None:
-			assert isinstance(cmd, (ArgCommand,str))
-			if isinstance(cmd, ArgCommand):
-				cmd = cmd.name
-			assert cmd
+	# def createCommandOption(self, cmd:typing.Union[ArgCommand,str,None], shortName:typing.Union[str,None], longName:str, description:str = None) -> ArgOption:
+	# 	if cmd is not None:
+	# 		assert isinstance(cmd, (ArgCommand,str))
+	# 		if isinstance(cmd, ArgCommand):
+	# 			cmd = cmd.name
+	# 		assert cmd
 
-		if shortName is not None:
-			assert isinstance(shortName, str)
-			assert len(shortName) == 1
+	# 	if shortName is not None:
+	# 		assert isinstance(shortName, str)
+	# 		assert len(shortName) == 1
 
-		if longName is not None:
-			assert isinstance(longName, str)
-			assert longName
+	# 	if longName is not None:
+	# 		assert isinstance(longName, str)
+	# 		assert longName
 
-		if (shortName is None) and (longName is None):
-			raise Exception("Arguments need at least a long or a short name!")
+	# 	if (shortName is None) and (longName is None):
+	# 		raise Exception("Arguments need at least a long or a short name!")
 
-		if description is not None:
-			assert isinstance(description, str)
-			assert description
+	# 	if description is not None:
+	# 		assert isinstance(description, str)
+	# 		assert description
 
-		# ----
+	# 	# ----
 
-		# find a possibly existing option object
+	# 	# find a possibly existing option object
 
-		oShort = self.__shortArgs.get(shortName) if shortName is not None else None
-		oLong = self.__longArgs.get(longName) if longName is not None else None
+	# 	oShort = self.__shortArgs.get(shortName) if shortName is not None else None
+	# 	oLong = self.__longArgs.get(longName) if longName is not None else None
 
-		if oShort is None:
-			if oLong is None:
-				# oShort == None, oLong == None
+	# 	if oShort is None:
+	# 		if oLong is None:
+	# 			# oShort == None, oLong == None
 
-				if description is None:
-					raise Exception("Arguments that have not been predefined need to have a description!")
+	# 			if description is None:
+	# 				raise Exception("Arguments that have not been predefined need to have a description!")
 				
-				# create new and register it
-				o = ArgOption(shortName, longName, description, True)
-				if shortName is not None:
-					self.__shortArgs[o.shortName] = o
-				if longName is not None:
-					self.__shortArgs[o.longName] = o
-				self.__options.append(o)
+	# 			# create new and register it
+	# 			o = ArgOption(shortName, longName, description)
+	# 			if shortName is not None:
+	# 				self.__shortArgs[o.shortName] = o
+	# 			if longName is not None:
+	# 				self.__shortArgs[o.longName] = o
+	# 			self.__options.append(o)
 
-			else:
-				# oShort == None, oLong != None
+	# 		else:
+	# 			# oShort == None, oLong != None
 
-				if not oLong.isProvidedByCommand:
-					raise Exception("A global option is already defined matching '--" + longName + "'")
-				o = oLong
+	# 			if not oLong.isProvidedByCommand:
+	# 				raise Exception("A global option is already defined matching '--" + longName + "'")
+	# 			o = oLong
 
-		else:
-			if oLong is None:
-				# oShort != None, oLong == None
+	# 	else:
+	# 		if oLong is None:
+	# 			# oShort != None, oLong == None
 
-				if not oShort.isProvidedByCommand:
-					raise Exception("A global option is already defined matching '-" + shortName + "'")
-				o = oShort
-			else:
-				# oShort != None, oLong != None
+	# 			if not oShort.isProvidedByCommand:
+	# 				raise Exception("A global option is already defined matching '-" + shortName + "'")
+	# 			o = oShort
+	# 		else:
+	# 			# oShort != None, oLong != None
 
-				# we can't arrive here
-				raise ImplementationErrorException()
+	# 			# we can't arrive here
+	# 			raise ImplementationErrorException()
 
-		# ----
+	# 	# ----
 
-		if cmd:
-			o.providedByCommands.append(cmd)
+	# 	if cmd:
+	# 		o.providedByCommands.append(cmd)
 
-		return o
-	#
+	# 	return o
+	# #
 
 	#
 	# Check if the specified short option already exists
@@ -495,12 +593,7 @@ class ArgsParser(object):
 		return False
 	#
 
-	def showHelp(self, bColor:bool = None):
-		print()
-		for line in self.buildHelpText(bColor = bColor):
-			print(line)
-		print()
-	#
+	################################################################################################################################
 
 	#
 	# Add information about an author of this software.
@@ -531,6 +624,7 @@ class ArgsParser(object):
 
 	#
 	# Add a return code.
+	# If you add the exact same return code and description again this registration is ignored.
 	#
 	# @param		int returnCode		The return code (= program exit status code)
 	# @param		str description		The description for this return code
@@ -538,6 +632,10 @@ class ArgsParser(object):
 	def createReturnCode(self, returnCode:int, description:str):
 		assert isinstance(returnCode, int)
 		assert isinstance(description, str)
+
+		for _existingRC, _existingDescr in self.__helpTextData.returnCodesList:
+			if (_existingRC == returnCode) and (_existingDescr == description):
+				return self
 
 		self.__helpTextData.returnCodesList.append((returnCode, description))
 
@@ -590,6 +688,15 @@ class ArgsParser(object):
 		return self
 	#
 
+	################################################################################################################################
+
+	def showHelp(self, bColor:bool = None):
+		print()
+		for line in self.buildHelpText(bColor = bColor):
+			print(line)
+		print()
+	#
+
 	def buildHelpText(self, bColor:bool = None) -> typing.List[str]:
 		helpTextBuilder = HelpTextBuilder(
 			self.__options,
@@ -602,6 +709,12 @@ class ArgsParser(object):
 		return helpTextBuilder.buildHelpText(bColor)
 	#
 
+	#
+	# Parse the specified arguments or the program arguments.
+	#
+	# @param	str[] args			(optional) If specified the specified arguments are parsed.
+	#								If <c>None</c> is specified (= the default) the program arguments are retrieved via <c>sys.argv</c> and parsed.
+	#
 	def parse(self, args:typing.Iterable[str] = None) -> ParsedArgs:
 		if args is None:
 			args = list(sys.argv)

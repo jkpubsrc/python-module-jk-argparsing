@@ -12,6 +12,10 @@ from .EnumParameterType import EnumParameterType
 
 
 
+
+
+OptionParameter = typing.NewType("OptionParameter", object)
+
 class OptionParameter(object):
 
 	################################################################################################################################
@@ -21,13 +25,19 @@ class OptionParameter(object):
 	#
 	# Constructor method.
 	#
-	def __init__(self, displayName:str, option, ptype:EnumParameterType):
+	def __init__(self, displayName:str, commandOrOption, ptype:EnumParameterType):
 		assert isinstance(displayName, str)
 		#assert isinstance(option, ArgOption)
 		assert isinstance(ptype, EnumParameterType)
 
 		self.displayName = displayName
-		self.option = option
+
+		self.commandOrOption = commandOrOption
+		self.__bIsOption = commandOrOption.__class__.__name__ == "ArgOption"
+		self.__bIsCommand = commandOrOption.__class__.__name__ == "ArgCommand"
+
+		if not (self.__bIsOption ^ self.__bIsCommand):
+			raise Exception("Implementation error!")
 
 		# TODO: modularize this
 
@@ -44,8 +54,10 @@ class OptionParameter(object):
 		self.toAbsolutePath = None
 		self.listMinLength:int = None
 		self.listMaxLength:int = None
-	#
+		self.intEnumValues = None
 
+		self.__kindStr = "command" if self.__bIsCommand else "option"
+	#
 
 	################################################################################################################################
 	## Public Properties
@@ -60,11 +72,11 @@ class OptionParameter(object):
 
 		if self.strMinLength is not None:
 			if len(sinput) < self.strMinLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.strMaxLength is not None:
 			if len(sinput) < self.strMaxLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.toAbsolutePath:
 			if self.baseDir:
@@ -73,7 +85,7 @@ class OptionParameter(object):
 
 		if self.mustExist:
 			if not os.path.isfile(sinput):
-				raise Exception("File specified for option " + repr(str(self.option)) + " does not exist: " + repr(sinput))			# NEW FIX
+				raise Exception("File specified for {} {} does not exist: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		return sinput
 	#
@@ -83,11 +95,11 @@ class OptionParameter(object):
 
 		if self.strMinLength is not None:
 			if len(sinput) < self.strMinLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.strMaxLength is not None:
 			if len(sinput) < self.strMaxLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.toAbsolutePath:
 			if self.baseDir:
@@ -96,7 +108,7 @@ class OptionParameter(object):
 
 		if self.mustExist:
 			if not os.path.exists(sinput):
-				raise Exception("File or directory specified for option " + repr(str(self.option)) + " does not exist: " + repr(sinput))
+				raise Exception("File or directory specified for {} {} does not exist: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		return sinput
 	#
@@ -106,11 +118,11 @@ class OptionParameter(object):
 
 		if self.strMinLength is not None:
 			if len(sinput) < self.strMinLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.strMaxLength is not None:
 			if len(sinput) < self.strMaxLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.toAbsolutePath:
 			if self.baseDir:
@@ -119,11 +131,11 @@ class OptionParameter(object):
 
 		if self.mustExist:
 			if not os.path.isdir(sinput):
-				raise Exception("Directory specified for option " + repr(str(self.option)) + " does not exist: " + repr(sinput))
+				raise Exception("Directory specified for {} {} does not exist: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.mustBeEmpty:
 			if bool(os.listdir(sinput)):
-				raise Exception("Directory specified for option " + repr(str(self.option)) + " is not empty: " + repr(sinput))
+				raise Exception("Directory specified for {} {} is empty: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		return sinput
 	#
@@ -135,21 +147,21 @@ class OptionParameter(object):
 			for v in self.strEnumValues:
 				if sinput == v:
 					return sinput
-			raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+			raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.strMinLength is not None:
 			if len(sinput) < self.strMinLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.strMaxLength is not None:
 			if len(sinput) < self.strMaxLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.strRegEx is not None:
 			regex = re.compile(self.strRegEx)
 			m = regex.match(sinput)
 			if m is None:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		return sinput
 	#
@@ -166,11 +178,11 @@ class OptionParameter(object):
 
 		if self.listMinLength is not None:
 			if len(ret) < self.listMinLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.listMaxLength is not None:
 			if len(ret) > self.listMaxLength:
-				raise Exception("Invalid argument value specified for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		return ret
 	#
@@ -179,15 +191,42 @@ class OptionParameter(object):
 		try:
 			n = int(sinput)
 		except:
-			raise Exception("Argument is not a valid integer value at option " + repr(str(self.option)) + ": " + repr(sinput))
+			raise Exception("Argument is not a valid integer value at {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
+
+		if self.intEnumValues is not None:
+			for v in self.intEnumValues:
+				if sinput == v:
+					return n
+			raise Exception("Invalid argument value specified for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		if self.minValue is not None:
 			if n < self.minValue:
-				raise Exception("Argument too small for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Argument too small for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 		if self.maxValue is not None:
 			if n > self.maxValue:
-				raise Exception("Argument too big for option " + repr(str(self.option)) + ": " + repr(sinput))
+				raise Exception("Argument too big for {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
+
 		return n
+	#
+
+	def __parseBoolean(self, sinput:str) -> bool:
+		sinput = sinput.lower()
+
+		if sinput in ("on", "yes", "true"):
+			return True
+		if sinput in ("off", "no", "false"):
+			return False
+
+		try:
+			n = int(sinput)
+			if n == 0:
+				return False
+			if n == 1:
+				return True
+		except:
+			pass
+
+		raise Exception("Argument is not a valid boolean value at {} {}: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 	#
 
 	################################################################################################################################
@@ -217,6 +256,8 @@ class OptionParameter(object):
 			raise Exception("Not supported!")
 		elif self.type == EnumParameterType.StringListCommaSeparated:
 			return self.__parseStringListCommaSeparated(sinput)
+		elif self.type == EnumParameterType.Bool:
+			return self.__parseBoolean(sinput)
 		else:
 			raise Exception("Implementation error!")
 	#
@@ -260,8 +301,38 @@ class OptionParameter(object):
 		elif self.type == EnumParameterType.StringListCommaSeparated:
 			sinput = parameters[pos]
 			return self.__parseStringListCommaSeparated(sinput), 1
+		elif self.type == EnumParameterType.Bool:
+			sinput = parameters[pos]
+			return self.__parseBoolean(sinput), 1
 		else:
 			raise Exception("Implementation error!")
+	#
+
+	#
+	# Both options already seem to be equivalent. Now let's check the options parameters if they are equivalent.
+	#
+	# NOTE: Only the option name and type are checked. Constraints are ignored.
+	#
+	def ensureIsEquivalentE(self, option, otherParam:OptionParameter):
+		assert isinstance(otherParam, OptionParameter)
+
+		if self.displayName != otherParam.displayName:
+			raise Exception("Option objects {} have different parameters: {} vs. {}".format(
+				repr(option),
+				str(self),
+				str(otherParam),
+			))
+
+		if self.type != otherParam.type:
+			raise Exception("Option objects {} have different parameter types: {} vs. {}".format(
+				repr(option),
+				str(self),
+				str(otherParam),
+			))
+	#
+	
+	def __str__(self):
+		return "<{}:{}>".format(self.displayName, self.type)
 	#
 
 #

@@ -74,7 +74,7 @@ class TextGridBlock(ITextBlock):
 	def __init__(self, indent:int, rowGap:int, columnGap:int, layouter):
 		self.__indent = indent
 
-		self.__rows = []
+		self.__rows:typing.List[ITextBlock] = []
 
 		self.__nColumnGap = columnGap
 		self.__nRowGap = rowGap
@@ -98,7 +98,10 @@ class TextGridBlock(ITextBlock):
 	#
 	@property
 	def nColumns(self) -> int:
-		return max([ len(row) for row in self.__rows ])
+		if self.__rows:
+			return max([ len(row) for row in self.__rows ])
+		else:
+			return 0
 	#
 
 	@property
@@ -173,7 +176,11 @@ class TextGridBlock(ITextBlock):
 		self.__layouter(availableWidth, li)
 	#
 
-	def addRow(self, cells:typing.Union[list,tuple]):
+	def addRow(self, cells:typing.Union[typing.List[ITextBlock],typing.Tuple[ITextBlock]]):
+		nColsExpected = self.nColumns
+		if nColsExpected > 0:
+			assert len(cells) == nColsExpected
+
 		self.__rows.append(cells)
 
 		self.__cached_maxWidth = None
@@ -184,7 +191,7 @@ class TextGridBlock(ITextBlock):
 	#
 	# @return		XLineFragment[]		Returns a list of lines.
 	#
-	def getLines(self, bColor:bool) -> list:
+	def getLines(self, bColor:bool) -> typing.List[XLineFragment]:
 		lines = []
 
 		for iRow, row in enumerate(self.__rows):

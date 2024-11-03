@@ -22,10 +22,12 @@ class TextBlockSequence(ITextBlock):
 	## Constructor
 	################################################################################################################################
 
-	def __init__(self, indent:int, blockGap:int):
+	def __init__(self, indent:int, blockGap:int, blocks:typing.List[ITextBlock] = None):
 		self.__indent = indent
 
-		self.__blocks = []
+		self.__blocks:typing.List[ITextBlock] = []
+		if blocks:
+			self.__blocks.extend(blocks)
 
 		self.__nBlockGap = blockGap
 
@@ -109,7 +111,7 @@ class TextBlockSequence(ITextBlock):
 	#
 	# @return		XLineFragment[]		Returns a list of lines.
 	#
-	def getLines(self, bColor:bool) -> list:
+	def getLines(self, bColor:bool) -> typing.List[XLineFragment]:
 		lines = []
 
 		for iBlock, block in enumerate(self.__blocks):

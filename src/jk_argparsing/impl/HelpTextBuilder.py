@@ -4,6 +4,7 @@
 import os
 import sys
 import typing
+import operator
 
 import jk_terminal_essentials
 
@@ -52,13 +53,40 @@ class HelpTextBuilder(object):
 	## Helper Methods
 	################################################################################################################################
 
-	def __windowWidth(self) -> int:
+	def ____makeDescr(self,
+			description:str,
+			supportsOptions:typing.List[ArgOption] = None,
+			providedByCommands:typing.List[str] = None,
+		) -> TextBlockSequence:
+
+		tbDescrLines:typing.List[TextBlock] = []
+
+		for line in description.strip().split("\n"):
+			tbDescrLines.append(TextBlock(0, line))
+
+		if supportsOptions:
+			tbDescrLines.append(TextBlock(0, "Supported options: " + ", ".join([
+				(("--" + o.longName) if o.longName else ("-" + o.shortName)) \
+				for o in supportsOptions
+			])))
+
+		if providedByCommands:
+			tbDescrLines.append(
+				TextBlock(0, "Commands using this option: " + ", ".join(providedByCommands))
+			)
+
+		return TextBlockSequence(0, 0, tbDescrLines)
+	#
+
+	def ____windowWidth(self) -> int:
 		try:
-			sz = os.get_terminal_size()
+			sz = jk_terminal_essentials.getTerminalSize()
 			return min(sz.columns - 1, 140)
 		except:
 			return 160
 	#
+
+	# --------------------------------------------------------------------------------------------------------------------------------
 
 	def __convertTSection(self, v:VisSettings, chapter:TSection) -> ITextBlock:
 		assert isinstance(v, VisSettings)
@@ -117,6 +145,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
+	#### Done
 	def _txtCreateOptions(self, v:VisSettings) -> ITextBlock:
 		assert isinstance(v, VisSettings)
 
@@ -148,20 +177,15 @@ class HelpTextBuilder(object):
 			if o.longName is not None:
 				sLongName = "--" + o.longName
 				for op in o.optionParameters:
-					sLongName += " " + op.displayName
+					sLongName += " <{}>".format(op.displayName)
 			else:
 				sLongName = ""
 
 			rows = [
 				TextBlock(0, sShortName, v.options_fgColor),
 				TextBlock(0, sLongName, v.options_fgColor),
-				TextBlock(0, o.description),
+				self.____makeDescr(o.description, providedByCommands=o.providedByCommands)
 			]
-
-			if o.providedByCommands:
-				rows.append(
-					TextBlock(0, "Commands using this option: " + ", ".join(o.providedByCommands))
-				)
 
 			grid.addRow(rows)
 
@@ -209,15 +233,23 @@ class HelpTextBuilder(object):
 		# content
 		grid = TextGridBlock(v.section1_indent, v.exitCodes_tableRowGap, v.exitCodes_tableColumnsGap, columnLayouterL2R)
 		ret.addBlock(grid)
-		for (retCode, retCodeDescription) in self.__helpTextData.returnCodesList:
+
+		_returnCodesList = list(self.__helpTextData.returnCodesList)
+		_returnCodesList.sort(key=operator.itemgetter(0))
+
+		_prevRetCode:int = None
+		for (retCode, retCodeDescription) in _returnCodesList:
+			_s = "" if retCode == _prevRetCode else str(retCode)
 			grid.addRow([
-				TextBlock(0, str(retCode), v.exitCodes_fgColor),
+				TextBlock(0, _s, v.exitCodes_fgColor),
 				TextBlock(0, retCodeDescription),
 			])
+			_prevRetCode = retCode
 
 		return ret
 	#
 
+	#### DONE
 	def _txtCreateCommands(self, v:VisSettings) -> ITextBlock:
 		assert isinstance(v, VisSettings)
 
@@ -244,16 +276,17 @@ class HelpTextBuilder(object):
 
 			s = cmd.name
 			for op in cmd.optionParameters:
-				s += " " + op.displayName
+				s += " <{}>".format(op.displayName)
 
 			grid.addRow([
 				TextBlock(0, s, v.commands_fgColor),
-				TextBlock(0, cmd.description),
+				self.____makeDescr(cmd.description, supportsOptions=cmd.supportsOptions)
 			])
 
 		return ret
 	#
 
+	#### DONE
 	def _txtCreateExtraCommands(self, v:VisSettings) -> ITextBlock:
 		assert isinstance(v, VisSettings)
 
@@ -274,12 +307,17 @@ class HelpTextBuilder(object):
 		keys.sort()
 		for key in keys:
 			cmd = self.__commandsExtra[key]
+
+			if cmd.isHidden:
+				continue
+
 			s = cmd.name
 			for op in cmd.optionParameters:
-				s += " " + op.displayName
+				s += " <{}>".format(op.displayName)
+
 			grid.addRow([
 				TextBlock(0, s, v.commands_fgColor),
-				TextBlock(0, cmd.description),
+				self.____makeDescr(cmd.description, supportsOptions=cmd.supportsOptions)
 			])
 
 		return ret
@@ -492,7 +530,7 @@ class HelpTextBuilder(object):
 
 		# ----
 
-		doc.layout(self.__windowWidth())
+		doc.layout(self.____windowWidth())
 		return [ str(x) for x in doc.getLines(bColor) ]
 	#
 

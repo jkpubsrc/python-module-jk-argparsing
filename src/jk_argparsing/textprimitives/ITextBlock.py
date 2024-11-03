@@ -65,7 +65,7 @@ class ITextBlock:
 	#
 	# @return		XLineFragment[]		The list of lines.
 	#
-	def getLines(self, bColor:bool) -> list:
+	def getLines(self, bColor:bool) -> typing.List[XLineFragment]:
 		raise NotImplementedError()
 	#
 

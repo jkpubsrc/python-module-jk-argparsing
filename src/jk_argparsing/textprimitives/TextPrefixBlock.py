@@ -67,7 +67,7 @@ class TextPrefixBlock(ITextBlock):
 	#
 	# @return		XLineFragment[]		Returns a list of lines.
 	#
-	def getLines(self, bColor:bool) -> list:
+	def getLines(self, bColor:bool) -> typing.List[XLineFragment]:
 		templateLine = XLineFragment(self.__indent, self.__prefix, len(self.__prefix))
 		retLines = []
 		for line in self.__block.getLines(bColor):
