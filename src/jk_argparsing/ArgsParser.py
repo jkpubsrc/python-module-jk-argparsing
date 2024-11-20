@@ -433,6 +433,7 @@ class ArgsParser(object):
 
 	def hasOption(self, name:str) -> bool:
 		assert isinstance(name, str)
+		assert name
 
 		# ----
 
@@ -582,7 +583,7 @@ class ArgsParser(object):
 	#
 	def hasLongOption(self, longName:str) -> bool:
 		assert isinstance(longName, str)
-		assert len(longName) == 1
+		assert len(longName) >= 1
 
 		# ----
 

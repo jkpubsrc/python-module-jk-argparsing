@@ -22,10 +22,7 @@ OLD
 *.old
 *.bak
 
-install*.sh
-publish*.sh
-uninstall*.sh
-test*.sh
+*.sh
 
 TEMP
 dist

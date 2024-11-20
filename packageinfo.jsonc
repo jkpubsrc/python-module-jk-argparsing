@@ -23,7 +23,7 @@
 		"license": "Apache2",
 		"name": "jk_argparsing",
 		"packageClass": "python-module",
-		"version": "0.2024.2.2"
+		"version": "0.2024.11.20"
 	},
 	"requirements": {
 		"htmlcssjs_packages": [],

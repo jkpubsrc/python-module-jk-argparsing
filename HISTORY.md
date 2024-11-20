@@ -73,3 +73,7 @@
 * 2024-02-08:
 	* Added: Support for multiline text at commands and options
 
+* 2024-11-20:
+	* Fixed: Validation in hasLongOption()
+
+
