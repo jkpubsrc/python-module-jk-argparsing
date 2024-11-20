@@ -178,17 +178,20 @@ class ArgOption(ArgItemBase):
 				repr(otherOptionWithSameNames.__description),
 			))
 
-		if len(self._optionParameters) != len(otherOptionWithSameNames._optionParameters):
-			raise Exception("Option objects {} have different number of arguments: {} vs. {}".format(
-				str(self),
-				len(self._optionParameters),
-				len(otherOptionWithSameNames._optionParameters),
-			))
+		# NOTE: We need to disable this logic because at the time of testing this option is only partially created.
+		# 		Therefore this check will allways fail.
 
-		for n in range(0, len(self._optionParameters)):
-			selfParam = self._optionParameters[n]
-			otherParam = otherOptionWithSameNames._optionParameters[n]
-			selfParam.ensureIsEquivalentE(self, otherParam)
+		# if len(self._optionParameters) != len(otherOptionWithSameNames._optionParameters):
+		# 	raise Exception("Option objects {} have different number of arguments: {} vs. {}".format(
+		# 		str(self),
+		# 		len(self._optionParameters),
+		# 		len(otherOptionWithSameNames._optionParameters),
+		# 	))
+
+		# for n in range(0, len(self._optionParameters)):
+		# 	selfParam = self._optionParameters[n]
+		# 	otherParam = otherOptionWithSameNames._optionParameters[n]
+		# 	selfParam.ensureIsEquivalentE(self, otherParam)
 	#
 
 #

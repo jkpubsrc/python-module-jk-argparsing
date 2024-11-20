@@ -75,5 +75,6 @@
 
 * 2024-11-20:
 	* Fixed: Validation in hasLongOption()
+	* Fixed: Deactivated extensive validation of command options against other command options
 
 
