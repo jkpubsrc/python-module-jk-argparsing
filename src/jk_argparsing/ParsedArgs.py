@@ -98,10 +98,10 @@ class ParsedArgs(object):
 	#
 	# Note: <c>self.__argsPos</c> stores the current parsing cursor.
 	#
-	# @return		str cmdName			The name of the command. <c>None</c> is returned if there is no more data to process.
-	# @return		list parsedArgs		The arguments for this command. <c>None</c> is returned if there is no more data to process.
+	# @return		str cmdName									The name of the command. <c>None</c> is returned if there is no more data to process.
+	# @return		list<null|int|bool|str|str[]> parsedArgs	The arguments for this command. <c>None</c> is returned if there is no more data to process.
 	#
-	def parseNextCommand(self) -> typing.Tuple[str,list]:
+	def parseNextCommand(self) -> typing.Tuple[str,typing.List[typing.Union[None,int,bool,str,typing.List[str]]]]:
 		if self.__bError:															# NEW IMPL
 			raise Exception("There have been previous parsing errors!")				# NEW IMPL
 
@@ -120,7 +120,7 @@ class ParsedArgs(object):
 
 		# now process the arguments of the command
 
-		parsedArgs = []
+		parsedArgs:typing.List[typing.Union[None,int,bool,str,typing.List[str]]] = []
 		for cmdOptionParam in cmd.optionParameters:
 			_parsingResult, _n = cmdOptionParam.parse2(self.programArgs, self.__argsPos)
 			if _n <= 0:

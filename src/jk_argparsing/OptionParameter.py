@@ -135,7 +135,7 @@ class OptionParameter(object):
 
 		if self.mustBeEmpty:
 			if bool(os.listdir(sinput)):
-				raise Exception("Directory specified for {} {} is empty: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
+				raise Exception("Directory specified for {} {} is not empty: {}".format(self.__kindStr, repr(str(self.commandOrOption)), repr(sinput)))
 
 		return sinput
 	#
@@ -239,7 +239,7 @@ class OptionParameter(object):
 	#
 	# @return		Returns the parsed value. This can be anything the value parser returned.
 	#
-	def parse(self, sinput:str) -> typing.Union[int,str,typing.List[str]]:
+	def parse(self, sinput:str) -> typing.Union[int,bool,str,typing.List[str]]:
 		assert isinstance(sinput, str)
 
 		if self.type == EnumParameterType.String:
@@ -265,10 +265,10 @@ class OptionParameter(object):
 	#
 	# This is the new version of the parsing method. This should replace the old version one day to avoid redundancies, but right now the old version is still in use.
 	#
-	# @return		object parsingResult		The value created by the parsing implementation.
-	# @return		int n						The number of arguments processed. This is typically 1, except for the case that a list is expected.
+	# @return		null|int|bool|str|str[] parsingResult	The value created by the parsing implementation.
+	# @return		int n									The number of arguments processed. This is typically 1, except for the case that a list is expected.
 	#
-	def parse2(self, parameters:list, pos:int):
+	def parse2(self, parameters:list, pos:int) -> typing.Tuple[typing.Union[None,int,bool,str,typing.List[str]],int]:
 		assert isinstance(parameters, list)
 		assert isinstance(pos, int)
 

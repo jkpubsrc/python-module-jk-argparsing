@@ -77,4 +77,9 @@
 	* Fixed: Validation in hasLongOption()
 	* Fixed: Deactivated extensive validation of command options against other command options
 
+* 2024-12-23:
+	* Refactoring: jk_argparsing_textprimitive
+
+* 2025-03-07:
+	* Fixed: Typo
 

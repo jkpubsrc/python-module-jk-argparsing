@@ -5,6 +5,9 @@ import os
 import sys
 import typing
 
+import jk_argparsing_textprimitive
+from jk_argparsing_textprimitive import *
+
 from .ArgOption import ArgOption
 from .ParsedArgs import ParsedArgs
 from .ArgsOptionDataDict import ArgsOptionDataDict
@@ -12,7 +15,6 @@ from .ArgUtils import ArgUtils
 from .AvailableLicenseList import AvailableLicenseList
 from .ArgCommand import ArgCommand
 from .textmodel.VisSettings import VisSettings
-from .textprimitives import *
 from .textmodel import *
 from .BashCompletionLocal import BashCompletionLocal
 from .impl.ImplementationErrorException import ImplementationErrorException

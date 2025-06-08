@@ -8,10 +8,11 @@ import operator
 
 import jk_terminal_essentials
 
+from jk_argparsing_textprimitive import *
+
 from ..ArgOption import ArgOption
 from ..ArgCommand import ArgCommand
 from ..textmodel.VisSettings import VisSettings
-from ..textprimitives import *
 from ..textmodel import *
 from .ImplementationErrorException import ImplementationErrorException
 from .HelpTextData import HelpTextData
@@ -81,7 +82,7 @@ class HelpTextBuilder(object):
 	def ____windowWidth(self) -> int:
 		try:
 			sz = jk_terminal_essentials.getTerminalSize()
-			return min(sz.columns - 1, 140)
+			return max(sz.columns - 1, 140)
 		except:
 			return 160
 	#
@@ -160,7 +161,9 @@ class HelpTextBuilder(object):
 		self.__appendTitle1WithGap(v, "Options", ret)
 
 		# content
-		grid = TextGridBlock(v.section1_indent, v.options_tableRowGap, v.options_tableColumnsGap, columnLayouterL2R)
+		grid = TextGridBlock(v.section1_indent, 3, v.options_tableRowGap, v.options_tableColumnsGap)
+		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
+		grid.columns[1].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
 		for o in self.__options:
 			if o.isProvidedByCommand and not o.providedByCommands:
@@ -184,7 +187,7 @@ class HelpTextBuilder(object):
 			rows = [
 				TextBlock(0, sShortName, v.options_fgColor),
 				TextBlock(0, sLongName, v.options_fgColor),
-				self.____makeDescr(o.description, providedByCommands=o.providedByCommands)
+				self.____makeDescr(o.description, providedByCommands=o.providedByCommands),
 			]
 
 			grid.addRow(rows)
@@ -231,7 +234,8 @@ class HelpTextBuilder(object):
 		self.__appendTitle1WithGap(v, "Program Exit Codes", ret)
 
 		# content
-		grid = TextGridBlock(v.section1_indent, v.exitCodes_tableRowGap, v.exitCodes_tableColumnsGap, columnLayouterL2R)
+		grid = TextGridBlock(v.section1_indent, 2, v.exitCodes_tableRowGap, v.exitCodes_tableColumnsGap)
+		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
 
 		_returnCodesList = list(self.__helpTextData.returnCodesList)
@@ -264,7 +268,8 @@ class HelpTextBuilder(object):
 		self.__appendTitle1WithGap(v, self.__helpTextData.titleCommandsStd, ret)
 
 		# content
-		grid = TextGridBlock(v.section1_indent, v.commands_tableRowGap, v.commands_tableColumnsGap, columnLayouterL2R)
+		grid = TextGridBlock(v.section1_indent, 2, v.commands_tableRowGap, v.commands_tableColumnsGap)
+		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
 		keys = list(self.__commands.keys())
 		keys.sort()
@@ -301,7 +306,8 @@ class HelpTextBuilder(object):
 		self.__appendTitle1WithGap(v, self.__helpTextData.titleCommandsExtra, ret)
 
 		# content
-		grid = TextGridBlock(v.section1_indent, v.commands_tableRowGap, v.commands_tableColumnsGap, columnLayouterL2R)
+		grid = TextGridBlock(v.section1_indent, 2, v.commands_tableRowGap, v.commands_tableColumnsGap)
+		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
 		keys = list(self.__commandsExtra.keys())
 		keys.sort()

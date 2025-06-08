@@ -19,6 +19,12 @@ keywords = [
 ]
 dependencies = [
 	"jk_terminal_essentials >= 0.2024.2.2",
+	"jk_argparsing_textprimitive >= 0.2024.12.22",
+	"jk_json >= 0.2025.1.8",
+	"jk_logging >= 0.2025.5.17",
+	"jk_prettyprintobj >= 0.2025.5.24",
+	"jk_typing >= 0.2025.2.1",
+	"jk_utils >= 0.2025.3.8",
 ]
 requires-python = ">=3.8"
 classifiers = [

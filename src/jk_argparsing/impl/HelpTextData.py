@@ -2,11 +2,30 @@
 
 
 import os
+import collections
 import sys
 import typing
 
 from ..textmodel import *
 
+
+
+
+
+
+
+class AuthorTuple(typing.NamedTuple):
+	name:str
+	email:str
+	description:str
+#
+
+
+
+class ReturnCodeTuple(typing.NamedTuple):
+	code:str
+	description:str
+#
 
 
 
@@ -26,17 +45,17 @@ class HelpTextData(object):
 
 		# defaults
 
-		self.titleCommandsStd = "Commands"
-		self.titleCommandsExtra = "Extra Commands"
+		self.titleCommandsStd:str = "Commands"
+		self.titleCommandsExtra:str = "Extra Commands"
 
 		# variables
 
-		self.appName = appName
+		self.appName:str = appName
 		self.shortAppDescription:str = shortAppDescription
 
-		self.synopsisList:typing.List[str] = []								# stores strings that hold the synopsis
-		self.authorsList:typing.List[typing.Tuple[str,str,str]] = []		# stores tuples of `(author-name, author-email, author-description)`
-		self.returnCodesList:typing.List[typing.Tuple[int,str]] = []		# stores tuples of `(return-code, description)`
+		self.synopsisList:typing.List[str] = []										# stores strings that hold the synopsis
+		self.authorsList:typing.List[typing.Union[AuthorTuple,typing.Tuple[str,str,str]]] = []	# stores tuples of `(author-name, author-email, author-description)`
+		self.returnCodesList:typing.List[typing.Union[ReturnCodeTuple,typing.Tuple[int,str]]] = []				# stores tuples of `(return-code, description)`
 		self.licenseTextLines:typing.Union[typing.List[str],None] = None
 
 		self.descriptionChapters:typing.List[TBlock,TSection] = []

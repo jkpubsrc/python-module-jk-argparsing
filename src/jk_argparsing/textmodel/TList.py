@@ -17,7 +17,7 @@ class TList(object):
 	#
 	# Constructor method.
 	#
-	def __init__(self, *items):
+	def __init__(self, *items:str):
 		assert isinstance(items, (tuple,list))
 		for item in items:
 			assert isinstance(item, str)
