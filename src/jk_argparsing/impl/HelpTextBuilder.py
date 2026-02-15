@@ -290,6 +290,44 @@ class HelpTextBuilder(object):
 	#
 
 	#### DONE
+	def _txtCreateHiddenCommands(self, v:VisSettings) -> ITextBlock:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
+		if not self.__commands:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, self.__helpTextData.titleCommandsHidden, ret)
+
+		# content
+		grid = TextGridBlock(v.section1_indent, 2, v.commands_tableRowGap, v.commands_tableColumnsGap)
+		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
+		ret.addBlock(grid)
+		keys = list(self.__commands.keys())
+		keys.sort()
+		for key in keys:
+			cmd = self.__commands[key]
+
+			if not cmd.isHidden:
+				continue
+
+			s = cmd.name
+			for op in cmd.optionParameters:
+				s += " <{}>".format(op.displayName)
+
+			grid.addRow([
+				TextBlock(0, s, v.commands_fgColor),
+				self.____makeDescr(cmd.description, supportsOptions=cmd.supportsOptions)
+			])
+
+		return ret
+	#
+
+	#### DONE
 	def _txtCreateExtraCommands(self, v:VisSettings) -> ITextBlock:
 		assert isinstance(v, VisSettings)
 
@@ -504,7 +542,7 @@ class HelpTextBuilder(object):
 	## Public Methods
 	################################################################################################################################
 
-	def buildHelpText(self, bColor:bool = None) -> typing.List[str]:
+	def buildHelpText(self, bColor:bool = None, bShowHiddenCmds:bool = False) -> typing.List[str]:
 		if bColor is None:
 			bColor = jk_terminal_essentials.checkTerminalSupportsColors()
 
@@ -513,21 +551,30 @@ class HelpTextBuilder(object):
 
 		# ----
 
-		for provider in [
-				self._txtCreateName,
-				self._txtCreateSynopsis,
-				self._txtCreateExtraHead,
-				self._txtCreateDescription,
-				self._txtCreateExtraMiddle,
-				self._txtCreateOptions,
-				self._txtCreateCommands,
-				self._txtCreateExtraCommands,
-				self._txtCreateExtraEnd,
-				self._txtReturnCodes,
-				self._txtCreateAuthors,
-				self._txtCreateLicense,
-			]:
+		providers = [
+			self._txtCreateName,
+			self._txtCreateSynopsis,
+			self._txtCreateExtraHead,
+			self._txtCreateDescription,
+			self._txtCreateExtraMiddle,
+			self._txtCreateOptions,
+			self._txtCreateCommands,
+			self._txtCreateExtraCommands,
+		]
 
+		if bShowHiddenCmds:
+			providers.append(self._txtCreateHiddenCommands)
+
+		providers.extend([
+			self._txtCreateExtraEnd,
+			self._txtReturnCodes,
+			self._txtCreateAuthors,
+			self._txtCreateLicense,
+		])
+
+		# ----
+
+		for provider in providers:
 			x = provider(v)
 			if x:
 				doc.addBlock(x)

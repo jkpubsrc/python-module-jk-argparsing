@@ -44,6 +44,7 @@ class HelpTextData(object):
 
 		self.titleCommandsStd:str = "Commands"
 		self.titleCommandsExtra:str = "Extra Commands"
+		self.titleCommandsHidden:str = "Hidden Commands"
 
 		# variables
 

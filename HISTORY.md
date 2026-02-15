@@ -83,3 +83,7 @@
 * 2025-03-07:
 	* Fixed: Typo
 
+* 2026-01-04:
+	* Added: Option for printing hidden commands
+
+

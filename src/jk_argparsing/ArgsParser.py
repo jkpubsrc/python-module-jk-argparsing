@@ -692,14 +692,27 @@ class ArgsParser(object):
 
 	################################################################################################################################
 
-	def showHelp(self, bColor:bool = None):
+	def showHelp(self,
+			bColor:bool = None,
+			*,
+			bShowHiddenCmds:bool = False,
+		):
+
 		print()
-		for line in self.buildHelpText(bColor = bColor):
+		for line in self.buildHelpText(
+				bColor=bColor,
+				bShowHiddenCmds=bShowHiddenCmds,
+			):
 			print(line)
 		print()
 	#
 
-	def buildHelpText(self, bColor:bool = None) -> typing.List[str]:
+	def buildHelpText(self,
+			bColor:bool = None,
+			*,
+			bShowHiddenCmds:bool = False,
+		) -> typing.List[str]:
+
 		helpTextBuilder = HelpTextBuilder(
 			self.__options,
 			self.__commands,
@@ -708,7 +721,7 @@ class ArgsParser(object):
 			self.__helpTextData,
 		)
 
-		return helpTextBuilder.buildHelpText(bColor)
+		return helpTextBuilder.buildHelpText(bColor, bShowHiddenCmds)
 	#
 
 	#
