@@ -21,8 +21,9 @@ class ParsedArgs(object):
 	## Constructor
 	################################################################################################################################
 
-	def __init__(self, commands:typing.Dict[str,ArgCommand]):
-		self.__commands = commands
+	def __init__(self, noCommand:ArgCommand|None, allCommands:typing.Dict[str,ArgCommand]):
+		self.__noCommand:ArgCommand|None = noCommand
+		self.__allCommands = allCommands
 		self.__optionData = ArgsOptionDataDict()
 		self.terminate = False
 		self.programArgs = []
@@ -94,16 +95,48 @@ class ParsedArgs(object):
 	"""
 
 	#
-	# Parse the next command in the command line.
+	# Parse the program arguments from the command line (if the parser is configured for not parsing commands).
+	#
+	def parseNoCommand(self) -> list[None|int|bool|str|list[str]]:
+		if self.__bError:															# NEW IMPL
+			raise Exception("There have been previous parsing errors!")				# NEW IMPL
+
+		if self.__noCommand is None:
+			raise Exception("Use parseNextCommand() because this parser is configured for commands!")
+
+		if self.__argsPos >= len(self.programArgs):
+			# end of parsing has been reached
+			return None
+
+		# now process the arguments of the command
+
+		parsedArgs:list[None|int|bool|str|list[str]] = []
+		for cmdOptionParam in self.__noCommand.optionParameters:
+			_parsingResult, _n = cmdOptionParam.parse2(self.programArgs, self.__argsPos)
+			if _n <= 0:
+				raise Exception("More arguments required!")
+			parsedArgs.append(_parsingResult)
+			self.__argsPos += _n
+
+		# return data
+
+		return parsedArgs
+	#
+
+	#
+	# Parse the next command in the command line (if the parser is configured for parsing commands).
 	#
 	# Note: <c>self.__argsPos</c> stores the current parsing cursor.
 	#
 	# @return		str cmdName									The name of the command. <c>None</c> is returned if there is no more data to process.
 	# @return		list<null|int|bool|str|str[]> parsedArgs	The arguments for this command. <c>None</c> is returned if there is no more data to process.
 	#
-	def parseNextCommand(self) -> typing.Tuple[str,typing.List[typing.Union[None,int,bool,str,typing.List[str]]]]:
+	def parseNextCommand(self) -> tuple[str,list[None|int|bool|str|list[str]]]:
 		if self.__bError:															# NEW IMPL
 			raise Exception("There have been previous parsing errors!")				# NEW IMPL
+
+		if self.__noCommand is not None:
+			raise Exception("Use parseNoCommand() because this parser is configured for commands!")
 
 		if self.__argsPos >= len(self.programArgs):
 			# end of parsing has been reached
@@ -112,7 +145,7 @@ class ParsedArgs(object):
 		# retrieve the command in the line
 
 		nextCmdCandidate = self.programArgs[self.__argsPos]
-		cmd = self.__commands.get(nextCmdCandidate, None)
+		cmd = self.__allCommands.get(nextCmdCandidate, None)
 		if cmd is None:
 			self.__bError = True													# NEW IMPL
 			raise Exception("Unknown command: \"" + nextCmdCandidate + "\"")
@@ -120,7 +153,7 @@ class ParsedArgs(object):
 
 		# now process the arguments of the command
 
-		parsedArgs:typing.List[typing.Union[None,int,bool,str,typing.List[str]]] = []
+		parsedArgs:list[None|int|bool|str|list[str]] = []
 		for cmdOptionParam in cmd.optionParameters:
 			_parsingResult, _n = cmdOptionParam.parse2(self.programArgs, self.__argsPos)
 			if _n <= 0:

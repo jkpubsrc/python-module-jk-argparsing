@@ -33,7 +33,7 @@ _MAIN_SCRIPT_PART = """_jk_argsparsing_completion_()
 	if [ -f "${absLocalDirCandidate}" ]; then
 		absCallerPath="${absLocalDirCandidate}"
 	else
-		absInstalledCandidate=$(whereis "${SEARCHCMD}" | sed -nE 's/^.*:\s(\S+).*$/\\1/p')
+		absInstalledCandidate=$(whereis "${SEARCHCMD}" | sed -nE 's/^.*:\\s(\S+).*$/\\\\1/p')
 		#echo "${absInstalledCandidate}" > foo2.txt
 
 		if [ -f "${absInstalledCandidate}" ]; then

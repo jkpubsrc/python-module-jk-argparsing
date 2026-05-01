@@ -1,10 +1,20 @@
-#!/usr/bin/python3
 
 
 import jk_logging
-import jk_testing
 
 import jk_argparsing
+import jk_argparsing.textmodel
+
+
+
+
+LOREM_IPSUM_SHORT = "Lorem ipsum dolor sid amet."
+LOREM_IPSUM_MULTILINE = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.\n" \
+	"At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
+LOREM_IPSUM_LONG = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. " \
+	"At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
+GALLIA = "Gallia est omnis divisa in partes tres, quarum unam incolunt Belgae, aliam Aquitani, tertiam qui ipsorum lingua Celtae, nostra Galli appellantur."
+THE_QUICK_BROWN_FOX = "The quick brown fox jumps over the lazy dog."
 
 
 
@@ -13,7 +23,7 @@ with jk_logging.wrapMain() as log:
 
 	# ---- definition
 
-	ap = jk_argparsing.ArgsParser("foobar", "Lorem ipsum dolor sid amet")
+	ap = jk_argparsing.ArgsParser("foobar", LOREM_IPSUM_SHORT)
 
 	# ----
 
@@ -59,10 +69,51 @@ with jk_logging.wrapMain() as log:
 	cmdInt.createOption("d", "detail", "Foo Bar Help")
 	cmdInt.createOption("a", "anotherDetail", "Foo Bar Help")
 
-	ap.createCommand("multiLine", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.\n"
-		+ "At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.")
+	ap.createCommand("multiLine", LOREM_IPSUM_MULTILINE)
 
-	# ---- parse
+	# ----
+
+	ap.createSynopsis(LOREM_IPSUM_LONG)
+	ap.createSynopsis(THE_QUICK_BROWN_FOX)
+
+	ap.createAuthor("Foo Bar", "foo@bar.com", "Some author")
+	ap.createAuthor("Tabea Tester", "tabea@tester.com")
+
+	ap.createReturnCode(0, "Success")
+	ap.createReturnCode(1, "Some error")
+	ap.createReturnCode(1, "Another error")
+
+	ap.createEnvVar("FOO_BAR", LOREM_IPSUM_SHORT)
+
+	ap.setLicense("Apache2")
+
+	# ----
+
+	ap.addDescriptionChapter(None, [
+		LOREM_IPSUM_SHORT,
+	])
+	ap.addDescriptionChapter("Foo", [
+		GALLIA,
+	])
+	ap.addDescriptionChapter(None, [
+		THE_QUICK_BROWN_FOX,
+	])
+
+	# ----
+
+	ap.addExtraChapterHead(
+		jk_argparsing.textmodel.TSection("Extra_Chapter_Head", [ LOREM_IPSUM_LONG ])
+	)
+
+	ap.addExtraChapterMiddle(
+		jk_argparsing.textmodel.TSection("Extra_Chapter_Middle", [ LOREM_IPSUM_LONG ])
+	)
+
+	ap.addExtraChapterEnd(
+		jk_argparsing.textmodel.TSection("Extra_Chapter_End", [ LOREM_IPSUM_LONG ])
+	)
+
+	# ---- display help text
 
 	ap.showHelp()
 

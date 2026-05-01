@@ -8,8 +8,26 @@ import typing
 
 class LicenseInfo(object):
 
-	def __init__(self, bIsFreeSoftware:bool = None, bIsNamedLicense:bool = None, shortLicenseName:str = None, longLicenseName:str = None,
-			licenseCopyrightOwner:str = None, versions:str = None, url:str = None, fullText:typing.List[str] = None):
+	################################################################################################################################
+	## Constants
+	################################################################################################################################
+
+	################################################################################################################################
+	## Constructor
+	################################################################################################################################
+
+	def __init__(self,
+			bIsFreeSoftware:bool = None,
+			bIsNamedLicense:bool = None,
+			shortLicenseName:str = None,
+			longLicenseName:str = None,
+			licenseCopyrightOwner:str = None,
+			versions:str = None,
+			url:str = None,
+			fullText:list[str] = None,
+			shortAltNames:list[str] = None,
+		):
+
 		assert isinstance(bIsFreeSoftware, bool)
 		assert isinstance(bIsNamedLicense, bool)
 		assert isinstance(shortLicenseName, str)
@@ -17,14 +35,20 @@ class LicenseInfo(object):
 			assert isinstance(longLicenseName, str)
 		if bIsNamedLicense:
 			assert isinstance(licenseCopyrightOwner, str)
-		if versions != None:
+		if versions is not None:
 			assert isinstance(versions, str)
-		if url != None:
+		if url is not None:
 			assert isinstance(url, str)
-		if fullText != None:
+		if fullText is not None:
 			assert isinstance(fullText, list)
 			for s in fullText:
 				assert isinstance(s, str)
+		if shortAltNames is not None:
+			assert isinstance(shortAltNames, list)
+			for s in shortAltNames:
+				assert isinstance(s, str)
+
+		# ----
 
 		self.isNamedLicense = bIsNamedLicense or bIsFreeSoftware
 		self.isFreeSoftware = bIsFreeSoftware
@@ -42,7 +66,17 @@ class LicenseInfo(object):
 				versions = versions[:-1]
 			self.version = int(versions)
 		self.fullText = fullText
+
+		self.shortAltNames = shortAltNames
 	#
+
+	################################################################################################################################
+	## Public Properties
+	################################################################################################################################
+
+	################################################################################################################################
+	## Helper Methods
+	################################################################################################################################
 
 	def __tostr(self, data):
 		if isinstance(data, (tuple, list)):
@@ -56,8 +90,12 @@ class LicenseInfo(object):
 			return str(data)
 	#
 
-	def toString(self, **kwargs) -> typing.List[str]:
-		ret:typing.List[str] = []
+	################################################################################################################################
+	## Public Methods
+	################################################################################################################################
+
+	def toString(self, **kwargs) -> list[str]:
+		ret:list[str] = []
 
 		sb = ""
 
@@ -71,7 +109,7 @@ class LicenseInfo(object):
 		if self.isNamedLicense:
 			sb += " as published by " + self.licenseCopyrightOwner
 
-		if (self.version != None) and (self.version > 0):
+		if (self.version is not None) and (self.version > 0):
 			if self.newerVersionsAllowed:
 				sb += " either version " + str(self.version) + " or later."
 			else:
@@ -80,14 +118,14 @@ class LicenseInfo(object):
 			sb += "."
 
 		if self.fullText is None:
-			if (self.url != None) and (self.longLicenseName != None):
+			if (self.url is not None) and (self.longLicenseName is not None):
 				sb += " For more details see the " + self.longLicenseName + ", which should be vailable at: "
 				sb += self.url
 
 		if sb:
 			ret.append(sb)
 
-		if self.fullText != None:
+		if self.fullText is not None:
 			textLines = self.fullText
 			for key in kwargs:
 				value = kwargs[key]
@@ -103,6 +141,10 @@ class LicenseInfo(object):
 
 		return ret
 	#
+
+	################################################################################################################################
+	## Public Static Methods
+	################################################################################################################################
 
 #
 

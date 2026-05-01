@@ -51,6 +51,10 @@ class VisSettings(object):
 		self.exitCodes_tableColumnsGap = 2
 		self.exitCodes_tableRowGap = 0
 
+		self.envVars_fgColor = te.FGCOLOR_LIGHT_BLUE
+		self.envVars_tableColumnsGap = 2
+		self.envVars_tableRowGap = 0
+
 		self.commands_fgColor = te.FGCOLOR_LIGHT_BLUE
 		self.commands_tableColumnsGap = 2
 		self.commands_tableRowGap = 0

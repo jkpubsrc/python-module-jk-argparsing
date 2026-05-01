@@ -4,7 +4,7 @@
 import sys
 import typing
 
-import jk_argparsing_textprimitive
+#import jk_argparsing_textprimitive
 from jk_argparsing_textprimitive import *
 
 from .ArgOption import ArgOption
@@ -16,8 +16,8 @@ from .ArgCommand import ArgCommand
 from .textmodel.VisSettings import VisSettings
 from .textmodel import *
 from .BashCompletionLocal import BashCompletionLocal
-from .impl.ImplementationErrorException import ImplementationErrorException
-from .impl.HelpTextData import HelpTextData
+#from .impl.ImplementationErrorException import ImplementationErrorException
+from .impl.HelpTextData import HelpTextData, AuthorTuple, ReturnCodeTuple, EnvVarTuple
 from .impl.HelpTextBuilder import HelpTextBuilder
 
 
@@ -193,8 +193,10 @@ class ArgsParser(object):
 
 		# variables
 
+		self.__noCommand:ArgCommand|None = None
 		self.__commands:typing.Dict[str,ArgCommand] = {}
 		self.__commandsExtra:typing.Dict[str,ArgCommand] = {}
+
 		self.__longArgs:typing.Dict[str,ArgOption] = {}
 		self.__shortArgs:typing.Dict[str,ArgOption] = {}
 		self.__options:typing.List[ArgOption] = []
@@ -371,7 +373,19 @@ class ArgsParser(object):
 		return (name in self.__commands) or (name in self.__commandsExtra)
 	#
 
+	def noCommand(self) -> ArgCommand:
+		if self.__commands or self.__commandsExtra:
+			raise Exception("Parser can not be configured for supporting commands and no commands at the same time!")
+
+		if self.__noCommand is None:
+			self.__noCommand = ArgCommand(self, "", "", True)
+		return self.__noCommand
+	#
+
 	def createCommand(self, name:str, description:str, bHidden:bool = False) -> ArgCommand:
+		if self.__noCommand:
+			raise Exception("Parser can not be configured for supporting commands and no commands at the same time!")
+
 		cmd = self.prepareCommand(name, description, bHidden)
 		self.registerPreparedCommand(cmd)
 		return cmd
@@ -395,6 +409,9 @@ class ArgsParser(object):
 
 		# ----
 
+		if self.__noCommand:
+			raise Exception("Parser can not be configured for supporting commands and no commands at the same time!")
+
 		if (cmd.name in self.__commands) or (cmd.name in self.__commandsExtra):
 			raise Exception("A command named '" + cmd.name + "' already exists!")
 		self.__commands[cmd.name] = cmd
@@ -407,6 +424,9 @@ class ArgsParser(object):
 		assert description
 
 		# ----
+
+		if self.__noCommand:
+			raise Exception("Parser can not be configured for supporting commands and no commands at the same time!")
 
 		o = ArgCommand(name, description)
 		if (o.name in self.__commands) or (o.name in self.__commandsExtra):
@@ -491,77 +511,79 @@ class ArgsParser(object):
 		self.__options.append(o)
 	#
 
-	# def createCommandOption(self, cmd:typing.Union[ArgCommand,str,None], shortName:typing.Union[str,None], longName:str, description:str = None) -> ArgOption:
-	# 	if cmd is not None:
-	# 		assert isinstance(cmd, (ArgCommand,str))
-	# 		if isinstance(cmd, ArgCommand):
-	# 			cmd = cmd.name
-	# 		assert cmd
-
-	# 	if shortName is not None:
-	# 		assert isinstance(shortName, str)
-	# 		assert len(shortName) == 1
-
-	# 	if longName is not None:
-	# 		assert isinstance(longName, str)
-	# 		assert longName
-
-	# 	if (shortName is None) and (longName is None):
-	# 		raise Exception("Arguments need at least a long or a short name!")
-
-	# 	if description is not None:
-	# 		assert isinstance(description, str)
-	# 		assert description
-
-	# 	# ----
-
-	# 	# find a possibly existing option object
-
-	# 	oShort = self.__shortArgs.get(shortName) if shortName is not None else None
-	# 	oLong = self.__longArgs.get(longName) if longName is not None else None
-
-	# 	if oShort is None:
-	# 		if oLong is None:
-	# 			# oShort == None, oLong == None
-
-	# 			if description is None:
-	# 				raise Exception("Arguments that have not been predefined need to have a description!")
+	"""
+	def createCommandOption(self, cmd:typing.Union[ArgCommand,str,None], shortName:typing.Union[str,None], longName:str, description:str = None) -> ArgOption:
+		if cmd is not None:
+			assert isinstance(cmd, (ArgCommand,str))
+			if isinstance(cmd, ArgCommand):
+				cmd = cmd.name
+			assert cmd
+	
+		if shortName is not None:
+			assert isinstance(shortName, str)
+			assert len(shortName) == 1
+	
+		if longName is not None:
+			assert isinstance(longName, str)
+			assert longName
+	
+		if (shortName is None) and (longName is None):
+			raise Exception("Arguments need at least a long or a short name!")
+	
+		if description is not None:
+			assert isinstance(description, str)
+			assert description
+	
+		# ----
+	
+		# find a possibly existing option object
+	
+		oShort = self.__shortArgs.get(shortName) if shortName is not None else None
+		oLong = self.__longArgs.get(longName) if longName is not None else None
+	
+		if oShort is None:
+			if oLong is None:
+				# oShort == None, oLong == None
+	
+				if description is None:
+					raise Exception("Arguments that have not been predefined need to have a description!")
 				
-	# 			# create new and register it
-	# 			o = ArgOption(shortName, longName, description)
-	# 			if shortName is not None:
-	# 				self.__shortArgs[o.shortName] = o
-	# 			if longName is not None:
-	# 				self.__shortArgs[o.longName] = o
-	# 			self.__options.append(o)
-
-	# 		else:
-	# 			# oShort == None, oLong != None
-
-	# 			if not oLong.isProvidedByCommand:
-	# 				raise Exception("A global option is already defined matching '--" + longName + "'")
-	# 			o = oLong
-
-	# 	else:
-	# 		if oLong is None:
-	# 			# oShort != None, oLong == None
-
-	# 			if not oShort.isProvidedByCommand:
-	# 				raise Exception("A global option is already defined matching '-" + shortName + "'")
-	# 			o = oShort
-	# 		else:
-	# 			# oShort != None, oLong != None
-
-	# 			# we can't arrive here
-	# 			raise ImplementationErrorException()
-
-	# 	# ----
-
-	# 	if cmd:
-	# 		o.providedByCommands.append(cmd)
-
-	# 	return o
-	# #
+				# create new and register it
+				o = ArgOption(shortName, longName, description)
+				if shortName is not None:
+					self.__shortArgs[o.shortName] = o
+				if longName is not None:
+					self.__shortArgs[o.longName] = o
+				self.__options.append(o)
+	
+			else:
+				# oShort == None, oLong != None
+	
+				if not oLong.isProvidedByCommand:
+					raise Exception("A global option is already defined matching '--" + longName + "'")
+				o = oLong
+	
+		else:
+			if oLong is None:
+				# oShort != None, oLong == None
+	
+				if not oShort.isProvidedByCommand:
+					raise Exception("A global option is already defined matching '-" + shortName + "'")
+				o = oShort
+			else:
+				# oShort != None, oLong != None
+	
+				# we can't arrive here
+				raise ImplementationErrorException()
+	
+		# ----
+	
+		if cmd:
+			o.providedByCommands.append(cmd)
+	
+		return o
+	#
+	"""
 
 	#
 	# Check if the specified short option already exists
@@ -607,7 +629,7 @@ class ArgsParser(object):
 			assert isinstance(email, str)
 			assert email
 
-		self.__helpTextData.authorsList.append((name, email, description))
+		self.__helpTextData.authorsList.append(AuthorTuple(name, email, description))
 
 		return self
 	#
@@ -639,7 +661,26 @@ class ArgsParser(object):
 			if (_existingRC == returnCode) and (_existingDescr == description):
 				return self
 
-		self.__helpTextData.returnCodesList.append((returnCode, description))
+		self.__helpTextData.returnCodesList.append(ReturnCodeTuple(returnCode, description))
+
+		return self
+	#
+
+	#
+	# Add a description for an environment variable.
+	#
+	# @param		str envVarName		The name of the environment variable
+	# @param		str description		The description of the environment variable
+	#
+	def createEnvVar(self, envVarName:str, description:str):
+		assert isinstance(envVarName, str)
+		assert isinstance(description, str)
+
+		for _existingVarName, _existingDescr in self.__helpTextData.envVarsList:
+			if _existingVarName == envVarName:
+				return self
+
+		self.__helpTextData.envVarsList.append(EnvVarTuple(envVarName, description))
 
 		return self
 	#
@@ -655,7 +696,16 @@ class ArgsParser(object):
 		return self
 	#
 
-	def addDescriptionChapter(self, chapterName:typing.Union[str,None], paragraphs:typing.Sequence = None) -> TSection:
+	#
+	# Add a description chapter.
+	#
+	# This method can be invoked multiple times.
+	#
+	# @param	str chapterName							(optional) If specified, this is the subheading. In that case all paragraphs are indented to indicate them being nested.
+	# 													If not specified the paragraphs will be added directly.
+	# @param	str|TBlock|TList|TSection paragraphs	(optional) The content to add.
+	#
+	def addDescriptionChapter(self, chapterName:typing.Union[str,None], paragraphs:typing.Sequence[str|TBlock|TList|TSection]) -> TSection:
 		if chapterName is None:
 			for p in paragraphs:
 				self.__helpTextData.descriptionChapters.append(TBlock(p))
@@ -715,6 +765,7 @@ class ArgsParser(object):
 
 		helpTextBuilder = HelpTextBuilder(
 			self.__options,
+			self.__noCommand,
 			self.__commands,
 			self.__commandsExtra,
 			self.__visSettings,
@@ -741,7 +792,9 @@ class ArgsParser(object):
 
 		# ----
 
-		ret = ParsedArgs(self.__commands)
+		_allCommands = dict(self.__commands)
+		_allCommands.update(self.__commandsExtra)
+		ret = ParsedArgs(self.__noCommand, _allCommands)
 		for key in self.__optionDataDefaults:
 			ret.optionData[key] = self.__optionDataDefaults[key]
 

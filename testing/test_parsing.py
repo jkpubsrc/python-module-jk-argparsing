@@ -1,10 +1,10 @@
-#!/usr/bin/python3
 
 
 import jk_logging
-import jk_testing
+import jk_assert
 
 import jk_argparsing
+
 
 
 
@@ -62,7 +62,7 @@ with jk_logging.wrapMain() as log:
 
 	# ---- verify options
 
-	jk_testing.Assert.isEqual(parsedArgs.optionData, {
+	jk_assert.assertEquals(parsedArgs.optionData, {
 		"aStrListValue": [ "foo", "bar", "baz" ],
 		"anInt": 2345,
 		"aBool": True,
@@ -70,8 +70,8 @@ with jk_logging.wrapMain() as log:
 
 	# ---- verfiy commands
 
-	jk_testing.Assert.isEqual(parsedArgs.terminate, False)
-	jk_testing.Assert.isEqual(parsedArgs.programArgs, [
+	jk_assert.assertEquals(parsedArgs.terminate, False)
+	jk_assert.assertEquals(parsedArgs.programArgs, [
 		"cmdBool", "1",
 		"cmdStr", "Some string",
 		"cmdInt", "12345",

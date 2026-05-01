@@ -26,6 +26,13 @@ class ReturnCodeTuple(typing.NamedTuple):
 
 
 
+class EnvVarTuple(typing.NamedTuple):
+	varName:str
+	description:str
+#
+
+
+
 #
 # Holds most of the data required to build the help text
 #
@@ -51,15 +58,16 @@ class HelpTextData(object):
 		self.appName:str = appName
 		self.shortAppDescription:str = shortAppDescription
 
-		self.synopsisList:typing.List[str] = []										# stores strings that hold the synopsis
-		self.authorsList:typing.List[typing.Union[AuthorTuple,typing.Tuple[str,str,str]]] = []	# stores tuples of `(author-name, author-email, author-description)`
-		self.returnCodesList:typing.List[typing.Union[ReturnCodeTuple,typing.Tuple[int,str]]] = []				# stores tuples of `(return-code, description)`
-		self.licenseTextLines:typing.Union[typing.List[str],None] = None
+		self.synopsisList:list[str] = []										# stores strings that hold the synopsis
+		self.authorsList:list[AuthorTuple|tuple[str,str,str]] = []	# stores tuples of `(author-name, author-email, author-description)`
+		self.returnCodesList:list[ReturnCodeTuple|tuple[int,str]] = []				# stores tuples of `(return-code, description)`
+		self.envVarsList:list[EnvVarTuple|tuple[str,str]] = []				# stores tuples of `(return-code, description)`
+		self.licenseTextLines:list[str]|None = None
 
-		self.descriptionChapters:typing.List[TBlock,TSection] = []
-		self.extraHeadChapters:typing.List[TSection] = []
-		self.extraMiddleChapters:typing.List[TSection] = []
-		self.extraEndChapters:typing.List[TSection] = []
+		self.descriptionChapters:list[TBlock|TSection] = []
+		self.extraHeadChapters:list[TSection] = []
+		self.extraMiddleChapters:list[TSection] = []
+		self.extraEndChapters:list[TSection] = []
 	#
 
 	################################################################################################################################

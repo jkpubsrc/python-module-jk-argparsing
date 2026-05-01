@@ -10,6 +10,10 @@ from .LicenseInfo import LicenseInfo
 
 class AvailableLicenseList(object):
 
+	################################################################################################################################
+	## Constants
+	################################################################################################################################
+
 	__LICENSES = [
 		LicenseInfo(
 			bIsFreeSoftware = False,
@@ -23,7 +27,8 @@ class AvailableLicenseList(object):
 				"Copyright {{$YEAR}} by {{$COPYRIGHTHOLDER}}",
 				"This software is genuine work created by {{$COPYRIGHTHOLDER}}. Distribution of source code, object code or any associated files of this work is generally prohibited.",
 				"For licensing details see EULA.txt or LICENSE.txt."
-			]),
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = False,
 			bIsNamedLicense = False,
@@ -36,47 +41,70 @@ class AvailableLicenseList(object):
 				"Copyright {{$YEAR}} by {{$COPYRIGHTHOLDER}}",
 				"This software is genuine work created by {{$COPYRIGHTHOLDER}}. Permission is hereby granted to run, copy and archive this software (source code and object code) and associated documentation files (the \"Software\") in scientific context (and scientific context only).",
 				"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
-			]),
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = True,
 			bIsNamedLicense = True,
-			shortLicenseName = "AGPL",
+			shortLicenseName = "AGPL3+",
 			longLicenseName = "GNU Affero General Public License",
 			licenseCopyrightOwner = "Free Software Foundation",
 			versions = "3+",
-			url = "https://www.gnu.org/licenses/agpl-3.0.en.html"),
+			url = "https://www.gnu.org/licenses/agpl-3.0.en.html",
+			shortAltNames=[
+				"AGPL3",
+				"AGPL",
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = True,
 			bIsNamedLicense = True,
-			shortLicenseName = "GPL",
+			shortLicenseName = "GPL3+",
 			longLicenseName = "GNU General Public License",
 			licenseCopyrightOwner = "Free Software Foundation",
 			versions = "3+",
-			url = "https://www.gnu.org/licenses/gpl-3.0.en.html"),
+			url = "https://www.gnu.org/licenses/gpl-3.0.en.html",
+			shortAltNames=[
+				"GPL3", "GPL",
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = True,
 			bIsNamedLicense = True,
-			shortLicenseName = "LGPL",
+			shortLicenseName = "LGPL3+",
 			longLicenseName = "GNU Lesser General Public License",
 			licenseCopyrightOwner = "Free Software Foundation",
 			versions = "3+",
-			url = "https://www.gnu.org/licenses/lgpl-3.0.en.html"),
+			url = "https://www.gnu.org/licenses/lgpl-3.0.en.html",
+			shortAltNames=[
+				"LGPL3",
+				"LGPL",
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = True,
 			bIsNamedLicense = True,
-			shortLicenseName = "Apache",
+			shortLicenseName = "Apache2",
 			longLicenseName = "Apache Software License",
 			licenseCopyrightOwner = "Apache Software Foundation",
 			versions = "2",
-			url = "https://www.apache.org/licenses/LICENSE-2.0"),
+			url = "https://www.apache.org/licenses/LICENSE-2.0",
+			shortAltNames=[
+				"Apache",
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = True,
 			bIsNamedLicense = True,
-			shortLicenseName = "MPL",
+			shortLicenseName = "MPL2",
 			longLicenseName = "Mozilla Public License",
 			licenseCopyrightOwner = "Mozilla Foundation",
 			versions = "2",
-			url = "https://www.apache.org/licenses/MPL-2.0"),
+			url = "https://www.apache.org/licenses/MPL-2.0",
+			shortAltNames=[
+				"MPL",
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = True,
 			bIsNamedLicense = True,
@@ -89,7 +117,8 @@ class AvailableLicenseList(object):
 				"Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:",
 				"The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.",
 				"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
-			]),
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = True,
 			bIsNamedLicense = True,
@@ -104,7 +133,8 @@ class AvailableLicenseList(object):
 				"2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.",
 				"3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.",
 				"THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-			]),
+			],
+		),
 		LicenseInfo(
 			bIsFreeSoftware = True,
 			bIsNamedLicense = True,
@@ -118,42 +148,68 @@ class AvailableLicenseList(object):
 				"1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.",
 				"2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.",
 				"THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-			]),
+			],
+		),
 	]
 
+	################################################################################################################################
+	## Constructor
+	################################################################################################################################
+
 	def __init__(self):
-		self.__licenseInfos:typing.Dict[str,LicenseInfo] = {}
+		self.__licenseInfos:dict[str,LicenseInfo] = {}
 
 		for li in AvailableLicenseList.__LICENSES:
 			if li is not None:
 				self.__licenseInfos[li.id] = li
 	#
 
+	################################################################################################################################
+	## Public Properties
+	################################################################################################################################
+
 	@property
-	def ids(self) -> typing.List[str]:
+	def ids(self) -> list[str]:
 		ids = list(self.__licenseInfos.keys())
 		ids.sort()
 		return ids
 	#
 
-	def getText(self, id:str, **kwargs) -> typing.Union[typing.List[str],None]:
-		id = id.lower()
-		li = self.__licenseInfos.get(id, None)
+	################################################################################################################################
+	## Helper Methods
+	################################################################################################################################
+
+	################################################################################################################################
+	## Public Methods
+	################################################################################################################################
+
+	def getText(self, id:str, **kwargs) -> list[str]|None:
+		li = self.get(id)
 		if li is None:
 			return None
-		if len(kwargs) == 0:
-			return li.toString()
-		else:
-			return li.toString(**kwargs)
+
+		return li.toString(**kwargs)
 	#
 
-	def get(self, id:str) -> typing.Union[LicenseInfo,None]:
+	def get(self, id:str) -> LicenseInfo|None:
 		id = id.lower()
-		li = self.__licenseInfos.get(id, None)
-		if li is None:
-			return None
-		return li
+
+		for li in self.__LICENSES:
+			if id == li.shortLicenseName.lower():
+				return li
+
+		for li in self.__LICENSES:
+			if li.shortAltNames:
+				for altName in li.shortAltNames:
+					if id == altName.lower():
+						return li
+
+		return None
 	#
+
+	################################################################################################################################
+	## Public Static Methods
+	################################################################################################################################
 
 #
 

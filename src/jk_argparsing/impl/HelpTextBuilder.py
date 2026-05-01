@@ -29,6 +29,7 @@ class HelpTextBuilder(object):
 	#
 	def __init__(self,
 			options:typing.List[ArgOption],
+			noCommand:ArgCommand|None,
 			commands:typing.Dict[str,ArgCommand],
 			commandsExtra:typing.Dict[str,ArgCommand],
 			visSettings:VisSettings,
@@ -38,6 +39,7 @@ class HelpTextBuilder(object):
 		# variables
 
 		self.__options = options
+		self.__noCommand = noCommand
 		self.__commands = commands
 		self.__commandsExtra = commandsExtra
 		self.__visSettings = visSettings
@@ -112,8 +114,21 @@ class HelpTextBuilder(object):
 
 		# ----
 
-		ret.addBlock(TextBlock(v.title1_indent, v.title1_preprocessor(title) if v.title1_preprocessor else title, v.title1_fgColor))
-		ret.addBlock(TextEmpty(v.title1_paddingAfterTitle))
+		ret.addBlock(
+			TextBlock(
+				v.title1_indent,
+				v.title1_preprocessor(title) if v.title1_preprocessor else title,
+				v.title1_fgColor,
+				semanticTypeID="h1",
+			)
+		)
+
+		ret.addBlock(
+			TextEmpty(
+				v.title1_paddingAfterTitle,
+				semanticTypeID="gap",
+			)
+		)
 	#
 
 	def _txtCreateName(self, v:VisSettings) -> ITextBlock:
@@ -124,7 +139,7 @@ class HelpTextBuilder(object):
 		return TextBlock(0, self.__helpTextData.appName + " - " + self.__helpTextData.shortAppDescription, v.appName_fgColor)
 	#
 
-	def _txtCreateSynopsis(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateSynopsis(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -144,8 +159,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	#### Done
-	def _txtCreateOptions(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateOptions(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -193,7 +207,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateAuthors(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateAuthors(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -218,7 +232,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtReturnCodes(self, v:VisSettings) -> ITextBlock:
+	def _txtReturnCodes(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -251,8 +265,40 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	#### DONE
-	def _txtCreateCommands(self, v:VisSettings) -> ITextBlock:
+	def _txtEnvVars(self, v:VisSettings) -> ITextBlock|None:
+		assert isinstance(v, VisSettings)
+
+		# ----
+
+		if not self.__helpTextData.envVarsList:
+			return None
+
+		ret = TextBlockSequence(0, 0)
+
+		# title
+		self.__appendTitle1WithGap(v, "Environment Variables", ret)
+
+		# content
+		grid = TextGridBlock(v.section1_indent, 2, v.envVars_tableRowGap, v.envVars_tableColumnsGap)
+		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
+		ret.addBlock(grid)
+
+		_envsList = list(self.__helpTextData.envVarsList)
+		_envsList.sort(key=operator.itemgetter(0))
+
+		_prevEnvVarName:str|None = None
+		for (envVarName, envVarDescription) in _envsList:
+			_s = "" if envVarName == _prevEnvVarName else str(envVarName)
+			grid.addRow([
+				TextBlock(0, _s, v.envVars_fgColor),
+				TextBlock(0, envVarDescription),
+			])
+			_prevEnvVarName = envVarName
+
+		return ret
+	#
+
+	def _txtCreateCommands(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -289,8 +335,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	#### DONE
-	def _txtCreateHiddenCommands(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateHiddenCommands(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -327,8 +372,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	#### DONE
-	def _txtCreateExtraCommands(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateExtraCommands(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -365,7 +409,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateLicense(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateLicense(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -386,7 +430,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateDescription(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateDescription(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -412,7 +456,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateExtraHead(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateExtraHead(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -454,7 +498,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateExtraMiddle(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateExtraMiddle(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -496,7 +540,7 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateExtraEnd(self, v:VisSettings) -> ITextBlock:
+	def _txtCreateExtraEnd(self, v:VisSettings) -> ITextBlock|None:
 		assert isinstance(v, VisSettings)
 
 		# ----
@@ -567,6 +611,7 @@ class HelpTextBuilder(object):
 
 		providers.extend([
 			self._txtCreateExtraEnd,
+			self._txtEnvVars,
 			self._txtReturnCodes,
 			self._txtCreateAuthors,
 			self._txtCreateLicense,

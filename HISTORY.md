@@ -86,4 +86,8 @@
 * 2026-01-04:
 	* Added: Option for printing hidden commands
 
+* 2026-05-01:
+	* Improved: Documentation
+	* Added: Support for environment variables
+
 

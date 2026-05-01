@@ -24,7 +24,7 @@ class TSection(object):
 	# @param		str title										The title of this section
 	# @param		(str|TBlock|TList|TSection)[] contentBlocks		The paragraphs of this section
 	#
-	def __init__(self, title:str, contentBlocks:typing.Sequence):
+	def __init__(self, title:str, contentBlocks:typing.Sequence[str|TBlock|TList|TSection]):
 		assert isinstance(title, str)
 		assert title
 		self.__title = title
