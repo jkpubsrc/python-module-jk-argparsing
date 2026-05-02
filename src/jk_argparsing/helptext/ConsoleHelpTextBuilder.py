@@ -8,17 +8,22 @@ import jk_terminal_essentials
 
 from jk_argparsing_textprimitive import *
 
+from ..ex.ImplementationErrorException import ImplementationErrorException
 from ..ArgOption import ArgOption
 from ..ArgCommand import ArgCommand
-from ..textmodel.VisSettings import VisSettings
-from ..textmodel import *
-from .ImplementationErrorException import ImplementationErrorException
-from .HelpTextData import HelpTextData
+from ..textmodel.TBlock import TBlock
+from ..textmodel.TList import TList
+from ..textmodel.TSection import TSection
+from .VisSettings import VisSettings
+from .HelpTextSrcData import HelpTextSrcData
+from .IHelpTextBuilder import IHelpTextBuilder
 
 
 
 
-class HelpTextBuilder(object):
+
+
+class ConsoleHelpTextBuilder(IHelpTextBuilder):
 
 	################################################################################################################################
 	## Constructor
@@ -27,23 +32,8 @@ class HelpTextBuilder(object):
 	#
 	# Constructor method.
 	#
-	def __init__(self,
-			options:typing.List[ArgOption],
-			noCommand:ArgCommand|None,
-			commands:typing.Dict[str,ArgCommand],
-			commandsExtra:typing.Dict[str,ArgCommand],
-			visSettings:VisSettings,
-			helpTextData:HelpTextData,
-		):
-
-		# variables
-
-		self.__options = options
-		self.__noCommand = noCommand
-		self.__commands = commands
-		self.__commandsExtra = commandsExtra
-		self.__visSettings = visSettings
-		self.__helpTextData = helpTextData
+	def __init__(self):
+		pass
 	#
 
 	################################################################################################################################
@@ -97,11 +87,18 @@ class HelpTextBuilder(object):
 
 		sec = TextBlockSequence(0, 0)
 
-		sec.addBlock(TextBlock(v.title2_indent, chapter.title, v.title2_fgColor))
+		sec.addBlock(
+			TextBlock(
+				v.title2_indent,
+				v.title2_preprocessor(chapter.title) if v.title2_preprocessor else chapter.title,
+				v.title2_fgColor,
+				semanticTypeID="h2",
+			)
+		)
 		sec.addBlock(TextEmpty(v.title2_paddingAfterTitle))
 
 		for block in chapter.contentBlocks:
-			sec.addBlock(TextBlock(v.section2_indent, block.text))
+			sec.addBlock(TextBlock(v.section2_indent, block.text, "p"))
 			sec.addBlock(TextEmpty(v.section2_gapBetweenSections))
 
 		return sec
@@ -131,20 +128,26 @@ class HelpTextBuilder(object):
 		)
 	#
 
-	def _txtCreateName(self, v:VisSettings) -> ITextBlock:
-		assert isinstance(v, VisSettings)
+	def _txtCreateAppName(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		return TextBlock(0, self.__helpTextData.appName + " - " + self.__helpTextData.shortAppDescription, v.appName_fgColor)
+		return TextBlock(0, ctx.appName + " - " + ctx.shortAppDescription, v.appName_fgColor, semanticTypeID="app")
 	#
 
-	def _txtCreateSynopsis(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateSynopsis(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__helpTextData.synopsisList:
+		if not ctx.synopsisList:
 			return None
 
 		ret = TextBlockSequence(0, 0)
@@ -153,18 +156,21 @@ class HelpTextBuilder(object):
 		self.__appendTitle1WithGap(v, "Synopsis", ret)
 
 		# content
-		for synopsisText in self.__helpTextData.synopsisList:
-			ret.addBlock(TextBlock(v.section1_indent, synopsisText, None))
+		for synopsisText in ctx.synopsisList:
+			ret.addBlock(TextBlock(v.section1_indent, synopsisText, None, semanticTypeID="p"))
 
 		return ret
 	#
 
-	def _txtCreateOptions(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateOptions(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__options:
+		if not ctx.options:
 			return None
 
 		ret = TextBlockSequence(0, 0)
@@ -177,7 +183,7 @@ class HelpTextBuilder(object):
 		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		grid.columns[1].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
-		for o in self.__options:
+		for o in ctx.options:
 			if o.isProvidedByCommand and not o.providedByCommands:
 				# skip as this is a command option that is unused
 				continue
@@ -196,23 +202,26 @@ class HelpTextBuilder(object):
 			else:
 				sLongName = ""
 
-			rows = [
+			cells = [
 				TextBlock(0, sShortName, v.options_fgColor),
 				TextBlock(0, sLongName, v.options_fgColor),
 				self.____makeDescr(o.description, providedByCommands=o.providedByCommands),
 			]
 
-			grid.addRow(rows)
+			grid.addRow(cells)
 
 		return ret
 	#
 
-	def _txtCreateAuthors(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateAuthors(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__helpTextData.authorsList:
+		if not ctx.authorsList:
 			return None
 
 		ret = TextBlockSequence(0, 0)
@@ -221,7 +230,7 @@ class HelpTextBuilder(object):
 		self.__appendTitle1WithGap(v, "Authors", ret)
 
 		# content
-		for (name, email, description) in self.__helpTextData.authorsList:
+		for (name, email, description) in ctx.authorsList:
 			s = name
 			if email:
 				s += " <" + email + ">"
@@ -232,12 +241,15 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtReturnCodes(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtReturnCodes(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__helpTextData.returnCodesList:
+		if not ctx.returnCodesList:
 			return None
 
 		ret = TextBlockSequence(0, 0)
@@ -250,7 +262,7 @@ class HelpTextBuilder(object):
 		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
 
-		_returnCodesList = list(self.__helpTextData.returnCodesList)
+		_returnCodesList = list(ctx.returnCodesList)
 		_returnCodesList.sort(key=operator.itemgetter(0))
 
 		_prevRetCode:int = None
@@ -265,12 +277,15 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtEnvVars(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtEnvVars(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__helpTextData.envVarsList:
+		if not ctx.envVarsList:
 			return None
 
 		ret = TextBlockSequence(0, 0)
@@ -283,7 +298,7 @@ class HelpTextBuilder(object):
 		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
 
-		_envsList = list(self.__helpTextData.envVarsList)
+		_envsList = list(ctx.envVarsList)
 		_envsList.sort(key=operator.itemgetter(0))
 
 		_prevEnvVarName:str|None = None
@@ -298,27 +313,30 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateCommands(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateCommands(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__commands:
+		if not ctx.commands:
 			return None
 
 		ret = TextBlockSequence(0, 0)
 
 		# title
-		self.__appendTitle1WithGap(v, self.__helpTextData.titleCommandsStd, ret)
+		self.__appendTitle1WithGap(v, ctx.titleCommandsStd, ret)
 
 		# content
 		grid = TextGridBlock(v.section1_indent, 2, v.commands_tableRowGap, v.commands_tableColumnsGap)
 		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
-		keys = list(self.__commands.keys())
+		keys = list(ctx.commands.keys())
 		keys.sort()
 		for key in keys:
-			cmd = self.__commands[key]
+			cmd = ctx.commands[key]
 
 			if cmd.isHidden:
 				continue
@@ -335,27 +353,30 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateHiddenCommands(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateHiddenCommands(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__commands:
+		if not ctx.commands:
 			return None
 
 		ret = TextBlockSequence(0, 0)
 
 		# title
-		self.__appendTitle1WithGap(v, self.__helpTextData.titleCommandsHidden, ret)
+		self.__appendTitle1WithGap(v, ctx.titleCommandsHidden, ret)
 
 		# content
 		grid = TextGridBlock(v.section1_indent, 2, v.commands_tableRowGap, v.commands_tableColumnsGap)
 		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
-		keys = list(self.__commands.keys())
+		keys = list(ctx.commands.keys())
 		keys.sort()
 		for key in keys:
-			cmd = self.__commands[key]
+			cmd = ctx.commands[key]
 
 			if not cmd.isHidden:
 				continue
@@ -372,27 +393,30 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateExtraCommands(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateExtraCommands(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__commandsExtra:
+		if not ctx.commandsExtra:
 			return None
 
 		ret = TextBlockSequence(0, 0)
 
 		# title
-		self.__appendTitle1WithGap(v, self.__helpTextData.titleCommandsExtra, ret)
+		self.__appendTitle1WithGap(v, ctx.titleCommandsExtra, ret)
 
 		# content
 		grid = TextGridBlock(v.section1_indent, 2, v.commands_tableRowGap, v.commands_tableColumnsGap)
 		grid.columns[0].columnWrapMode = EnumWrapMode.NO_WRAP
 		ret.addBlock(grid)
-		keys = list(self.__commandsExtra.keys())
+		keys = list(ctx.commandsExtra.keys())
 		keys.sort()
 		for key in keys:
-			cmd = self.__commandsExtra[key]
+			cmd = ctx.commandsExtra[key]
 
 			if cmd.isHidden:
 				continue
@@ -409,12 +433,15 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateLicense(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateLicense(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__helpTextData.licenseTextLines:
+		if not ctx.licenseTextLines:
 			return None
 
 		ret = TextBlockSequence(0, 0)
@@ -423,19 +450,22 @@ class HelpTextBuilder(object):
 		self.__appendTitle1WithGap(v, "License", ret)
 
 		# content
-		for line in self.__helpTextData.licenseTextLines:
+		for line in ctx.licenseTextLines:
 			ret.addBlock(TextBlock(v.section1_indent, line))
 			ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
 
 		return ret
 	#
 
-	def _txtCreateDescription(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateDescription(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
-		if not self.__helpTextData.descriptionChapters:
+		if not ctx.descriptionChapters:
 			return None
 
 		ret = TextBlockSequence(0, 0)
@@ -444,7 +474,7 @@ class HelpTextBuilder(object):
 		self.__appendTitle1WithGap(v, "Description", ret)
 
 		# content
-		for chapter in self.__helpTextData.descriptionChapters:
+		for chapter in ctx.descriptionChapters:
 			if isinstance(chapter, TBlock):
 				ret.addBlock(TextBlock(v.section1_indent, chapter.text))
 				ret.addBlock(TextEmpty(v.section2_gapBetweenSections))
@@ -456,19 +486,22 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateExtraHead(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateExtraHead(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
 		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
 
-		if not self.__helpTextData.extraHeadChapters:
+		if not ctx.extraHeadChapters:
 			return None
 
 		ret = TextBlockSequence(0, 0)
 
-		for n, chapter in enumerate(self.__helpTextData.extraHeadChapters):
+		for n, chapter in enumerate(ctx.extraHeadChapters):
 			assert isinstance(chapter, TSection)
 
 			if n > 0:
@@ -498,19 +531,22 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateExtraMiddle(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateExtraMiddle(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
 		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
 
-		if not self.__helpTextData.extraMiddleChapters:
+		if not ctx.extraMiddleChapters:
 			return None
 
 		ret = TextBlockSequence(0, 0)
 
-		for n, chapter in enumerate(self.__helpTextData.extraMiddleChapters):
+		for n, chapter in enumerate(ctx.extraMiddleChapters):
 			assert isinstance(chapter, TSection)
 
 			if n > 0:
@@ -540,19 +576,22 @@ class HelpTextBuilder(object):
 		return ret
 	#
 
-	def _txtCreateExtraEnd(self, v:VisSettings) -> ITextBlock|None:
-		assert isinstance(v, VisSettings)
+	def _txtCreateExtraEnd(self,
+			ctx:HelpTextSrcData,
+		) -> ITextBlock|None:
+		assert isinstance(ctx, HelpTextSrcData)
+		v = ctx.visSettings
 
 		# ----
 
 		# TODO: methods are almost identical: _txtCreateExtraHead(), _txtCreateExtraMiddle() and _txtCreateExtraHead()
 
-		if not self.__helpTextData.extraEndChapters:
+		if not ctx.extraEndChapters:
 			return None
 
 		ret = TextBlockSequence(0, 0)
 
-		for n, chapter in enumerate(self.__helpTextData.extraEndChapters):
+		for n, chapter in enumerate(ctx.extraEndChapters):
 			assert isinstance(chapter, TSection)
 
 			if n > 0:
@@ -586,17 +625,26 @@ class HelpTextBuilder(object):
 	## Public Methods
 	################################################################################################################################
 
-	def buildHelpText(self, bColor:bool = None, bShowHiddenCmds:bool = False) -> typing.List[str]:
+	def buildHelpText(self,
+			ctx:HelpTextSrcData,
+			bColor:bool|None = None,
+			bShowHiddenCmds:bool = False,
+			**kwargs,
+		) -> list[str]:
+
 		if bColor is None:
 			bColor = jk_terminal_essentials.checkTerminalSupportsColors()
 
-		v = self.__visSettings
+		v = ctx.visSettings
+
+		# ----
+
 		doc = TextBlockSequence(0, v.section1_gapBetweenSections)
 
 		# ----
 
 		providers = [
-			self._txtCreateName,
+			self._txtCreateAppName,
 			self._txtCreateSynopsis,
 			self._txtCreateExtraHead,
 			self._txtCreateDescription,
@@ -620,7 +668,7 @@ class HelpTextBuilder(object):
 		# ----
 
 		for provider in providers:
-			x = provider(v)
+			x = provider(ctx)
 			if x:
 				doc.addBlock(x)
 

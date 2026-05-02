@@ -13,13 +13,18 @@ from .ArgsOptionDataDict import ArgsOptionDataDict
 from .ArgUtils import ArgUtils
 from .AvailableLicenseList import AvailableLicenseList
 from .ArgCommand import ArgCommand
-from .textmodel.VisSettings import VisSettings
-from .textmodel import *
+from .helptext.AuthorTuple import AuthorTuple
+from .helptext.EnvVarTuple import EnvVarTuple
+from .helptext.ReturnCodeTuple import ReturnCodeTuple
+from .helptext.VisSettings import VisSettings
+from .helptext.HelpTextSrcData import HelpTextSrcData
+from .textmodel.TBlock import TBlock
+from .textmodel.TList import TList
+from .textmodel.TSection import TSection
 from .BashCompletionLocal import BashCompletionLocal
 #from .impl.ImplementationErrorException import ImplementationErrorException
-from .impl.HelpTextData import HelpTextData, AuthorTuple, ReturnCodeTuple, EnvVarTuple
-from .impl.HelpTextBuilder import HelpTextBuilder
-
+from .helptext.IHelpTextBuilder import IHelpTextBuilder
+from .helptext.ConsoleHelpTextBuilder import ConsoleHelpTextBuilder
 
 
 
@@ -203,7 +208,15 @@ class ArgsParser(object):
 		self.__optionDataDefaults = ArgsOptionDataDict()
 
 		self.__visSettings = VisSettings()
-		self.__helpTextData = HelpTextData(appName, shortAppDescription)
+		self.__helpTextData = HelpTextSrcData(
+			appName,
+			shortAppDescription,
+			self.__options,
+			None,
+			self.__commands,
+			self.__commandsExtra,
+			self.__visSettings,
+		)
 	#
 
 	################################################################################################################################
@@ -231,7 +244,7 @@ class ArgsParser(object):
 	#
 
 	@property
-	def allOptionNames(self) -> list:
+	def allOptionNames(self) -> list[str]:
 		allOptions = []
 		for o in self.__options:
 			if o.shortName:
@@ -242,7 +255,7 @@ class ArgsParser(object):
 	#
 
 	@property
-	def allCommandNames(self) -> list:
+	def allCommandNames(self) -> list[str]:
 		return list(self.__commands.keys()) + list(self.__commandsExtra.keys())
 	#
 
@@ -743,7 +756,7 @@ class ArgsParser(object):
 	################################################################################################################################
 
 	def showHelp(self,
-			bColor:bool = None,
+			bColor:bool|None = None,
 			*,
 			bShowHiddenCmds:bool = False,
 		):
@@ -758,21 +771,37 @@ class ArgsParser(object):
 	#
 
 	def buildHelpText(self,
-			bColor:bool = None,
+			bColor:bool|None = None,
 			*,
 			bShowHiddenCmds:bool = False,
 		) -> typing.List[str]:
 
-		helpTextBuilder = HelpTextBuilder(
-			self.__options,
-			self.__noCommand,
-			self.__commands,
-			self.__commandsExtra,
-			self.__visSettings,
-			self.__helpTextData,
-		)
+		_builder = ConsoleHelpTextBuilder()
 
-		return helpTextBuilder.buildHelpText(bColor, bShowHiddenCmds)
+		return self.buildCustomHelpText(
+			_builder,
+			bColor=bColor,
+			bShowHiddenCmds=bShowHiddenCmds,
+		)
+	#
+
+	#
+	# Build a help text by using a custom help text builder.
+	#
+	def buildCustomHelpText(self,
+			helpTextBuilder:IHelpTextBuilder,
+			*,
+			bColor:bool|None = None,
+			bShowHiddenCmds:bool = False,
+			**kwargs,
+		) -> typing.List[str]:
+		assert isinstance(helpTextBuilder, IHelpTextBuilder)
+
+		# set missing values
+		self.__helpTextData.noCommand = self.__noCommand
+
+		# now build
+		return helpTextBuilder.buildHelpText(self.__helpTextData, bColor, bShowHiddenCmds, **kwargs)
 	#
 
 	#

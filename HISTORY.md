@@ -90,4 +90,7 @@
 	* Improved: Documentation
 	* Added: Support for environment variables
 
+* 2026-05-02:
+	* Improved: Modularized help text generation
+
 
