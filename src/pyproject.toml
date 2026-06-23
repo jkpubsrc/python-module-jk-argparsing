@@ -18,7 +18,7 @@ keywords = [
 	"args",
 ]
 dependencies = [
-	"jk_argparsing_textprimitive >= 0.2024.12.22",
+	"jk_argparsing_textprimitive >= 0.2025.5.1",
 	"jk_terminal_essentials >= 0.2024.2.2",
 ]
 requires-python = ">=3.8"

@@ -93,4 +93,8 @@
 * 2026-05-02:
 	* Improved: Modularized help text generation
 
+* 2026-06-23:
+	* Added: Type hints
+	* Refactoring
+
 

@@ -77,8 +77,11 @@ with jk_logging.wrapMain() as log:
 		"cmdInt", "12345",
 	])
 
+	print()
 	commands = list(parsedArgs.parseCommands())
-	print(commands)
+	print("commands:")
+	for cmd in commands:
+		print("  ", repr(cmd))
 
 	assert len(commands) == 3
 	assert commands[0] == ("cmdBool", [ True ])

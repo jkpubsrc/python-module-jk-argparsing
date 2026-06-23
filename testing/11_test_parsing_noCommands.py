@@ -51,7 +51,7 @@ with jk_logging.wrapMain() as log:
 	])
 
 	programArgs = list(parsedArgs.parseNoCommand())
-	print(programArgs)
+	print("programArgs:", programArgs)
 
 	assert len(programArgs) == 1
 	assert programArgs[0] == "something"
