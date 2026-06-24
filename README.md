@@ -8,7 +8,7 @@ This module provides an API for processing command line arguments. There is ``ar
 
 Information about this module can be found here:
 
-* [github.org](https://github.com/jkpubsrc/python-module-jk-argparsing)
+* [github.com](https://github.com/jkpubsrc/python-module-jk-argparsing)
 * [pypi.python.org](https://pypi.python.org/pypi/jk_argparsing)
 
 History
